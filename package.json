@@ -1,0 +1,21 @@
+{
+  "name": "pelela-docs",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "5.0.6",
+    "@astrojs/starlight": "0.40.0",
+    "astro": "6.4.8",
+    "pelelajs": "1.1.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vite-plugin-pelelajs": "1.1.0"
+  }
+}

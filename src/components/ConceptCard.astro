@@ -1,0 +1,17 @@
+---
+const { title, color = 'yellow', children } = Astro.props
+---
+
+<article class={`concept-card ${color}`}>
+  <h3>{title}</h3>
+  <div><slot /></div>
+</article>
+
+<style>
+  .concept-card { border: 3px solid #151515; box-shadow: 5px 5px #151515; color: #151515; padding: 1rem; }
+  .concept-card.yellow { background: #ffdb4d; }
+  .concept-card.green { background: #8ed8c1; }
+  .concept-card.coral { background: #ff9a8f; }
+  h3 { margin: 0 0 .5rem; }
+  p:last-child { margin-bottom: 0; }
+</style>

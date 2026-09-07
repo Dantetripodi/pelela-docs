@@ -1,0 +1,14 @@
+---
+const { title = 'Ahora probá' } = Astro.props
+---
+
+<aside class="exercise" aria-label="Ejercicio">
+  <h3>{title}</h3>
+  <slot />
+</aside>
+
+<style>
+  .exercise { border: 3px solid #151515; background: #d9c8ff; box-shadow: 5px 5px #151515; color: #151515; padding: 1rem; }
+  h3 { margin-top: 0; }
+  :global(p:last-child) { margin-bottom: 0; }
+</style>

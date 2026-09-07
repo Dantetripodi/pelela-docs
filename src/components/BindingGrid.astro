@@ -1,0 +1,74 @@
+<div class="binding-grid" aria-label="Bindings principales de PelelaJS">
+  <article class="binding-card content">
+    <code>bind-content</code>
+    <strong>Mostrar texto</strong>
+    <span>Refleja una propiedad en un elemento.</span>
+  </article>
+  <article class="binding-card value">
+    <code>bind-value</code>
+    <strong>Leer un input</strong>
+    <span>Mantiene sincronizado el valor escrito.</span>
+  </article>
+  <article class="binding-card enabled">
+    <code>bind-enabled</code>
+    <strong>Habilitar controles</strong>
+    <span>Define si un botón o control puede usarse.</span>
+  </article>
+  <article class="binding-card class">
+    <code>bind-class</code>
+    <strong>Cambiar apariencia</strong>
+    <span>Conecta una clase con el estado.</span>
+  </article>
+  <article class="binding-card style">
+    <code>bind-style</code>
+    <strong>Aplicar estilos</strong>
+    <span>Conecta un estilo calculado.</span>
+  </article>
+</div>
+
+<style>
+  .binding-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: 9.5rem;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin: 1.5rem 0 2rem;
+  }
+  .binding-card {
+    display: grid;
+    gap: 0.35rem;
+    border: 2px solid var(--pelela-card-border, #20262b);
+    border-radius: 10px;
+    box-shadow: 4px 4px 0 var(--pelela-shadow, rgba(32, 38, 43, 0.18));
+    color: #20262b;
+    box-sizing: border-box;
+    align-self: stretch !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0.9rem 1rem;
+    min-height: 8.25rem;
+    align-content: start;
+  }
+  .binding-card code { width: fit-content; border: 0; background: rgba(255, 255, 255, 0.62); color: #20262b; font-size: 0.86rem; font-weight: 800; }
+  .binding-card strong { font-size: 1.05rem; }
+  .binding-card span { font-size: 0.9rem; line-height: 1.45; }
+  .content { background: #ffdb4d; }
+  .value { background: #8ed8c1; }
+  .enabled { background: #a9c7ff; }
+  .class { background: #ff9a8f; }
+  .style { background: #d9c8ff; }
+  @media (max-width: 900px) {
+    .binding-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-rows: 9rem;
+    }
+  }
+  @media (max-width: 600px) {
+    .binding-grid {
+      grid-template-columns: 1fr;
+      grid-auto-rows: auto;
+    }
+    .binding-card { height: auto !important; min-height: 8.25rem; }
+  }
+</style>

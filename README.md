@@ -2,7 +2,22 @@
 
 Documentación didáctica para aprender PelelaJS y pasar del maquetado HTML/CSS a interfaces reactivas.
 
-Este repositorio contiene únicamente el material documental en formato MDX. La publicación como sitio en GitHub Pages queda para una etapa posterior.
+El sitio está construido con Astro y Starlight. Incluye la documentación en MDX, navegación, buscador, estilos propios y demos interactivas.
+
+## Desarrollo local
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Para generar la versión de producción:
+
+```bash
+pnpm build
+```
+
+El sitio se publica automáticamente en GitHub Pages cada vez que se actualiza la rama `main`.
 
 ## Recorrido recomendado
 
@@ -13,4 +28,3 @@ Este repositorio contiene únicamente el material documental en formato MDX. La 
 5. Condicionales, listas y componentes
 6. Routing y ejercicios
 7. Puente hacia React
-

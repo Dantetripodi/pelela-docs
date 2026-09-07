@@ -1,0 +1,200 @@
+/* PelelaJS visual system: warm paper in light mode, ink-and-night in dark mode. */
+:root {
+  --sl-color-white: #20262b;
+  --sl-color-gray-1: #2c353b;
+  --sl-color-gray-2: #4b5961;
+  --sl-color-gray-3: #71808a;
+  --sl-color-gray-4: #a2adb2;
+  --sl-color-gray-5: #d4d9d7;
+  --sl-color-gray-6: #eceee9;
+  --sl-color-gray-7: #f7f6f1;
+  --sl-color-black: #fcfbf7;
+  --sl-color-accent-low: #fff0a8;
+  --sl-color-accent: #a67900;
+  --sl-color-accent-high: #5c4300;
+  --sl-color-text: #344047;
+  --sl-color-text-accent: #075b86;
+  --sl-color-bg: #fcfbf7;
+  --sl-color-bg-nav: #f4f2eb;
+  --sl-color-bg-sidebar: #f8f7f2;
+  --sl-color-bg-inline-code: #e7ebe7;
+  --sl-color-bg-accent: #ffdb4d;
+  --sl-color-hairline: #d8ddd9;
+  --sl-color-hairline-light: #e7e9e5;
+  --sl-color-hairline-shade: #c8cfcb;
+  --sl-font: Inter, ui-sans-serif, system-ui, sans-serif;
+  --sl-font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+
+  --pelela-ink: #20262b;
+  --pelela-code-bg: #202930;
+  --pelela-code-border: #44525b;
+  --pelela-code-text: #f4f7f4;
+  --pelela-shadow: rgba(32, 38, 43, 0.18);
+  --pelela-card-border: #20262b;
+  --pelela-muted-surface: #f0f1ed;
+  --pelela-demo-bg: #fff3d6;
+  --pelela-demo-text: #20262b;
+  --pelela-demo-border: #20262b;
+  --pelela-demo-shadow: #20262b;
+}
+
+:root[data-theme='dark'] {
+  --sl-color-white: #f4f7f4;
+  --sl-color-gray-1: #e7ebe8;
+  --sl-color-gray-2: #c2cbc9;
+  --sl-color-gray-3: #929e9e;
+  --sl-color-gray-4: #657175;
+  --sl-color-gray-5: #3a444b;
+  --sl-color-gray-6: #252c33;
+  --sl-color-gray-7: #1e242a;
+  --sl-color-black: #171b20;
+  --sl-color-accent-low: #4d3c00;
+  --sl-color-accent: #ffdb4d;
+  --sl-color-accent-high: #ffeda1;
+  --sl-color-text: #d9e0dd;
+  --sl-color-text-accent: #ffdb4d;
+  --sl-color-bg: #171b20;
+  --sl-color-bg-nav: #1d2228;
+  --sl-color-bg-sidebar: #1a2026;
+  --sl-color-bg-inline-code: #303941;
+  --sl-color-bg-accent: #ffdb4d;
+  --sl-color-hairline: #303941;
+  --sl-color-hairline-light: #3a444b;
+  --sl-color-hairline-shade: #101419;
+
+  --pelela-ink: #f4f7f4;
+  --pelela-code-bg: #11171d;
+  --pelela-code-border: #43515b;
+  --pelela-code-text: #f4f7f4;
+  --pelela-shadow: rgba(0, 0, 0, 0.35);
+  --pelela-card-border: #56636a;
+  --pelela-muted-surface: #222a31;
+  --pelela-demo-bg: #252d35;
+  --pelela-demo-text: #f4f7f4;
+  --pelela-demo-border: #ffdb4d;
+  --pelela-demo-shadow: #080b0f;
+}
+
+body {
+  background: var(--sl-color-bg);
+  color: var(--sl-color-text);
+}
+
+/* Code is intentionally dark in both themes: it reads like a focused lab surface. */
+.sl-markdown-content :is(pre, .expressive-code) {
+  overflow: auto;
+  border: 2px solid var(--pelela-code-border);
+  border-radius: 12px;
+  background: var(--pelela-code-bg) !important;
+  box-shadow: 5px 5px 0 var(--pelela-shadow);
+  color: var(--pelela-code-text);
+}
+
+.sl-markdown-content pre code {
+  color: var(--pelela-code-text);
+  font-family: var(--sl-font-mono);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.sl-markdown-content pre code { display: block; min-width: max-content; padding: 0.25rem; }
+.sl-markdown-content :not(pre) > code {
+  border: 1px solid color-mix(in srgb, var(--sl-color-gray-3), transparent 45%);
+  border-radius: 5px;
+  background: var(--sl-color-bg-inline-code);
+  color: var(--sl-color-white);
+  padding: 0.12em 0.35em;
+}
+
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3 { color: var(--sl-color-white); letter-spacing: -0.04em; }
+.sl-markdown-content h1 { font-weight: 950; }
+.sl-markdown-content a { text-decoration-thickness: 2px; }
+.sl-markdown-content blockquote {
+  border-inline-start: 5px solid #e05d52;
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, #ff9a8f, var(--sl-color-bg) 78%);
+  padding: 0.75rem 1rem;
+}
+
+.sl-markdown-content table {
+  display: table !important;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 2px solid var(--pelela-card-border);
+  border-radius: 10px;
+  box-shadow: 4px 4px 0 var(--pelela-shadow);
+}
+.sl-markdown-content th { background: var(--sl-color-accent); color: #20262b; font-weight: 850; }
+.sl-markdown-content td, .sl-markdown-content th { border-color: var(--sl-color-hairline); }
+.sl-markdown-content tr:nth-child(even) td { background: color-mix(in srgb, var(--sl-color-bg-sidebar), var(--sl-color-gray-6) 35%); }
+.sl-markdown-content :is(td, th) { padding: 0.75rem 0.85rem; overflow-wrap: anywhere; }
+.sl-markdown-content tr > :first-child { width: 28%; }
+.sl-markdown-content tr > :last-child { width: 72%; }
+.sl-markdown-content table:has(th:nth-child(3)) tr > :first-child { width: 20%; }
+.sl-markdown-content table:has(th:nth-child(3)) tr > :nth-child(2),
+.sl-markdown-content table:has(th:nth-child(3)) tr > :nth-child(3) { width: 40%; }
+.sl-markdown-content :is(.card, .sl-link-card) {
+  border: 2px solid var(--pelela-card-border);
+  border-radius: 10px;
+  box-shadow: 4px 4px 0 var(--pelela-shadow);
+  background: var(--sl-color-bg-sidebar);
+}
+
+/* Starlight chrome */
+[data-theme] :is(header, nav, aside) { color: var(--sl-color-text); }
+[data-theme] header { border-color: var(--sl-color-hairline); }
+[data-theme] aside { border-color: var(--sl-color-hairline); }
+
+.eyebrow {
+  color: #b27700;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+:root[data-theme='dark'] .eyebrow { color: #ffdb4d; }
+
+.doc-grid {
+  display: grid;
+  align-items: stretch;
+  grid-auto-rows: 1fr;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin: 1.5rem 0;
+}
+.doc-card {
+  align-self: stretch;
+  border: 2px solid var(--pelela-card-border);
+  border-radius: 10px;
+  box-shadow: 5px 5px 0 var(--pelela-shadow);
+  color: #20262b;
+  box-sizing: border-box;
+  height: 100%;
+  margin: 0 !important;
+  min-height: 8rem;
+  padding: 1rem;
+}
+.doc-card:nth-child(3n + 1) { background: #ffdb4d; }
+.doc-card:nth-child(3n + 2) { background: #8ed8c1; }
+.doc-card:nth-child(3n + 3) { background: #ff9a8f; }
+.doc-card h3 { margin-top: 0; color: #20262b; }
+.doc-card p:last-child { margin-bottom: 0; }
+.exercise {
+  border: 2px solid var(--pelela-card-border);
+  border-radius: 10px;
+  background: #d9c8ff;
+  box-shadow: 5px 5px 0 var(--pelela-shadow);
+  color: #20262b;
+  padding: 1rem;
+}
+.exercise h2, .exercise h3 { margin-top: 0; color: #20262b; }
+.exercise p:last-child { margin-bottom: 0; }
+
+@media (max-width: 600px) {
+  .sl-markdown-content :is(pre, .expressive-code) { box-shadow: 3px 3px 0 var(--pelela-shadow); }
+}

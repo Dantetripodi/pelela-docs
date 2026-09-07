@@ -28,29 +28,59 @@ export class App {
 ### Contexto de cada elemento
 
 Dentro del bloque, `item` representa el elemento actual. El contexto de la iteración también
-puede acceder al ViewModel padre, por lo que una acción puede invocar métodos de la aplicación.
+puede acceder al ViewModel padre, por lo que una acción puede invocar sus métodos. Si necesitás la
+posición, declarala con el atributo `index`.
 
 ```html
-<button for-each="item of items" click="removeItem(item)">
+<button for-each="item of items" index="itemIndex" click="removeItem">
   <span bind-content="item.name"></span>
 </button>
 ```
 
-La sintaxis exacta de una acción depende de la versión del framework y de cómo esté armado el
-ViewModel; conviene mantener la lógica de modificación en métodos de la clase.
+El atributo `click` recibe solo el nombre del método. Pelela entrega el contexto de la iteración
+como primer argumento, por lo que el método puede acceder a `item` e `itemIndex` sin escribir una
+llamada dentro del HTML.
+
+```ts
+type Item = {
+  name: string
+}
+
+type ItemContext = {
+  item: Item
+  itemIndex: number
+}
+
+removeItem({ itemIndex }: ItemContext) {
+  this.items.splice(itemIndex, 1)
+}
+```
 
 ### Caso vacío
 
 Una lista vacía no es un error: es un estado que la interfaz debe explicar.
 
 ```html
-<p if="items.length === 0">Todavía no hay elementos.</p>
-<ul if="items.length > 0">
+<p if="hasNoItems">Todavía no hay elementos.</p>
+<ul if="hasItems">
   <li for-each="item of items">
     <span bind-content="item.name"></span>
   </li>
 </ul>
 ```
+
+```ts
+get hasItems() {
+  return this.items.length > 0
+}
+
+get hasNoItems() {
+  return this.items.length === 0
+}
+```
+
+Los atributos de Pelela aceptan propiedades, getters o rutas de propiedades, pero no expresiones
+como `items.length > 0`. Las comparaciones pertenecen al ViewModel.
 
 ### Video relacionado
 

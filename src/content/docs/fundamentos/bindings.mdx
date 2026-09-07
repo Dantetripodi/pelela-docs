@@ -19,6 +19,24 @@ modificarlo a mano, declarás qué propiedad lo alimenta.
 Si cambia `name`, el elemento que usa `bind-content="name"` se actualiza solo. Esa relación es
 la base para construir interfaces reactivas.
 
+## Qué puede contener un binding
+
+El valor de un binding es el nombre de una propiedad, un getter o una ruta de propiedades del
+ViewModel. No es una expresión de JavaScript.
+
+```html title="app.pelela"
+<!-- Válidos -->
+<span bind-content="name"></span>
+<span bind-content="user.address.city"></span>
+<section if="hasResults"></section>
+
+<!-- Inválido: los operadores no se evalúan dentro del template -->
+<section if="results.length > 0"></section>
+```
+
+Cuando necesitás una condición o un valor calculado, expresalo con un getter y enlazá ese getter
+desde el template.
+
 ```html title="app.pelela"
 <input bind-value="name" placeholder="Tu nombre" />
 <p>Hola, <span bind-content="name"></span></p>

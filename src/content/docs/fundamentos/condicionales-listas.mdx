@@ -22,7 +22,7 @@ lógica compleja directamente en el HTML.
 
 ```html
 <ul>
-  <li for-each="task in tasks">
+  <li for-each="task of tasks">
     <span bind-content="task.title"></span>
   </li>
 </ul>
@@ -33,10 +33,22 @@ tasks = [
   { title: 'Leer la guía', done: false },
   { title: 'Resolver el ejercicio', done: false },
 ]
+
+get hasTasks() {
+  return this.tasks.length > 0
+}
+
+get hasNoTasks() {
+  return this.tasks.length === 0
+}
 ```
 
-Cuando una lista no aparece, comprobá que la colección exista, que el nombre del item sea el
-mismo dentro del bloque y que el array se reemplace o actualice de la forma esperada.
+La sintaxis de la iteración es siempre `item of collection`. Pelela no evalúa comparaciones ni
+operadores dentro de los atributos: para condiciones como “la lista está vacía”, definí un getter
+en el ViewModel y usalo mediante `if="hasNoTasks"`.
+
+Cuando una lista no aparece, comprobá que la colección exista, que sea un array y que el nombre
+del item sea el mismo dentro del bloque.
 
 <div class="exercise"><h3>Ejercicio</h3><p>Armá una lista de tareas con estado vacío y una cantidad de elementos visible.</p></div>
 

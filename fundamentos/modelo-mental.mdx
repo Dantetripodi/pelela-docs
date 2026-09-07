@@ -1,0 +1,41 @@
+---
+title: Modelo mental
+description: Estado, vista y eventos en PelelaJS.
+---
+
+## El modelo mental
+
+Una interfaz Pelela puede pensarse como un ciclo:
+
+```text
+estado → render de la vista → evento del usuario → cambio de estado → render
+```
+
+El ViewModel concentra los datos y las operaciones. El template describe dónde mostrar esos
+datos y qué acciones invocar.
+
+```ts
+export class App {
+  counter = 0
+
+  increment() {
+    this.counter++
+  }
+}
+```
+
+```html
+<pelela view-model="App">
+  <p bind-content="counter"></p>
+  <button click="increment">Sumar</button>
+</pelela>
+```
+
+La vista no necesita buscar manualmente el elemento ni escribir `textContent`. Declara la
+relación y Pelela mantiene esa relación actualizada.
+
+<div class="doc-grid">
+  <div class="doc-card"><h3>Estado</h3><p>Datos que explican cómo está la pantalla ahora.</p></div>
+  <div class="doc-card"><h3>Vista</h3><p>HTML que representa ese estado.</p></div>
+  <div class="doc-card"><h3>Evento</h3><p>Acción que puede cambiar el estado.</p></div>
+</div>

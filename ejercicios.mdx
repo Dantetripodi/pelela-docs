@@ -1,0 +1,61 @@
+---
+title: Ejercicios
+description: Una secuencia progresiva para practicar PelelaJS.
+---
+
+import InteractiveExercise from '../../components/InteractiveExercise.astro'
+
+## Ejercicios
+
+Resolvelos en orden. Cada uno agrega una idea sin esconder el funcionamiento anterior.
+
+<div class="doc-grid">
+  <div class="doc-card"><h3>01 · Contador</h3><p>Estado numérico, dos eventos y binding de contenido.</p></div>
+  <div class="doc-card"><h3>02 · Conversor</h3><p>Dos inputs, valores derivados y validación.</p></div>
+  <div class="doc-card"><h3>03 · To-do</h3><p>Lista, alta, toggle, filtro y estado vacío.</p></div>
+  <div class="doc-card"><h3>04 · Integrador</h3><p>Componentes, routing y una interfaz completa.</p></div>
+</div>
+
+## Criterio de entrega
+
+Para cada ejercicio explicá:
+
+- cuál es el estado mínimo;
+- qué eventos lo modifican;
+- qué parte de la vista depende de cada propiedad;
+- qué pasa en el caso vacío o inválido.
+
+El objetivo no es escribir más código, sino poder justificar la relación entre modelo, vista y
+eventos.
+
+<InteractiveExercise
+  title="01 · Completar un contador"
+  description="Completá los dos métodos del ViewModel. Cuando la solución sea correcta, se habilita la vista previa para probar los eventos."
+  initialCode={`export class App {
+  counter = 0
+
+  increment() {
+    // completar
+  }
+
+  decrement() {
+    // completar
+  }
+}`}
+  solutionCode={`export class App {
+  counter = 0
+
+  increment() {
+    this.counter++
+  }
+
+  decrement() {
+    this.counter--
+  }
+}`}
+ />
+
+<div class="exercise">
+  <h3>Cómo se valida</h3>
+  <p>El ejercicio busca que cada evento modifique el estado con la operación correcta. No ejecutamos código arbitrario en el navegador: la preview usa un runner controlado y seguro.</p>
+</div>

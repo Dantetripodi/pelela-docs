@@ -1,0 +1,37 @@
+---
+title: Eventos
+description: Responder a clicks, teclado y acciones del usuario.
+---
+
+## Eventos
+
+Los eventos llaman métodos del ViewModel. El método modifica el estado; el binding se ocupa de
+reflejar el cambio.
+
+```html
+<button click="increment">+</button>
+<button click="decrement">-</button>
+```
+
+```ts
+increment() {
+  this.counter++
+}
+
+decrement() {
+  this.counter--
+}
+```
+
+Para formularios, la idea es la misma: el input mantiene el dato y un evento dispara la acción.
+Separá la validación o transformación en métodos chicos para que el ViewModel siga siendo
+legible.
+
+## Una secuencia para depurar
+
+1. ¿El elemento tiene el atributo de evento?
+2. ¿El nombre coincide exactamente con el método?
+3. ¿El método cambia una propiedad observada?
+4. ¿La vista tiene el binding correcto?
+
+<div class="exercise"><h3>Ejercicio</h3><p>Convertí un botón “Me gusta” en un contador que alterne también una clase visual.</p></div>

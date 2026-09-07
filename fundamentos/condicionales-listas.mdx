@@ -1,0 +1,44 @@
+---
+title: Condicionales y listas
+description: Renderizar contenido según el estado y trabajar con colecciones.
+---
+
+## Condicionales y listas
+
+Las interfaces reales muestran estados vacíos, mensajes de error y colecciones. Pelela permite
+expresar esas variantes desde el template.
+
+## Mostrar u ocultar
+
+```html
+<p if="loading">Cargando...</p>
+<p if="errorMessage" bind-content="errorMessage"></p>
+```
+
+La condición debe ser una propiedad o expresión que puedas explicar en una frase. Evitá meter
+lógica compleja directamente en el HTML.
+
+## Repetir elementos
+
+```html
+<ul>
+  <li for-each="task in tasks">
+    <span bind-content="task.title"></span>
+  </li>
+</ul>
+```
+
+```ts
+tasks = [
+  { title: 'Leer la guía', done: false },
+  { title: 'Resolver el ejercicio', done: false },
+]
+```
+
+Cuando una lista no aparece, comprobá que la colección exista, que el nombre del item sea el
+mismo dentro del bloque y que el array se reemplace o actualice de la forma esperada.
+
+<div class="exercise"><h3>Ejercicio</h3><p>Armá una lista de tareas con estado vacío y una cantidad de elementos visible.</p></div>
+
+Esta página funciona como repaso general. Para estudiar cada mecanismo por separado, seguí
+[Renderizado condicional](./renderizado-condicional/) y [For Each](./for-each/).

@@ -1,0 +1,63 @@
+---
+title: Testing
+description: Verificar el comportamiento de una aplicación PelelaJS.
+---
+
+## Testing en PelelaJS
+
+Un test debe comprobar comportamiento observable: dado un estado inicial y una acción, la
+aplicación debe llegar al resultado esperado. No alcanza con verificar que una clase exista.
+
+### Qué conviene probar
+
+- El estado inicial del ViewModel.
+- Cada evento importante y su cambio de estado.
+- Los casos límite: lista vacía, input inválido y valores extremos.
+- La relación entre estado y vista cuando usamos bindings.
+- La navegación cuando una aplicación usa routing.
+
+### Ejemplo de criterio
+
+Para un contador, el criterio puede escribirse así:
+
+```text
+Estado inicial: counter = 0
+Acción: increment()
+Resultado: counter = 1
+
+Acción: decrement()
+Resultado: counter = 0
+```
+
+La documentación oficial del repositorio usa Vitest para la suite del framework. En una app de
+la materia, empezá por tests pequeños del ViewModel y agregá pruebas de integración cuando la
+vista tenga varios componentes relacionados.
+
+### Ciclo recomendado
+
+1. Escribí el comportamiento esperado.
+2. Prepará el estado inicial.
+3. Ejecutá el método o evento.
+4. Compará el resultado con una aserción.
+5. Agregá un caso límite.
+
+```ts
+import { describe, expect, it } from 'vitest'
+
+describe('App', () => {
+  it('incrementa el contador', () => {
+    const app = new App()
+
+    app.increment()
+
+    expect(app.counter).toBe(1)
+  })
+})
+```
+
+El ejemplo muestra la idea; el import y la forma de construir la aplicación deben adaptarse a
+la estructura concreta del proyecto.
+
+### Video relacionado
+
+[Pelela - Testing](https://www.youtube.com/watch?v=79_MzBq_jo4).

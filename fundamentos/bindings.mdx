@@ -1,0 +1,47 @@
+---
+title: Bindings
+description: Cómo conectar el estado del ViewModel con el HTML.
+---
+
+import BindingGrid from '../../../components/BindingGrid.astro'
+
+## Bindings: conectar estado y vista
+
+Un binding es un puente entre el estado y un elemento del HTML. En vez de buscar el elemento y
+modificarlo a mano, declarás qué propiedad lo alimenta.
+
+<BindingGrid />
+
+## La idea en una línea
+
+`estado → binding → elemento`
+
+Si cambia `name`, el elemento que usa `bind-content="name"` se actualiza solo. Esa relación es
+la base para construir interfaces reactivas.
+
+```html title="app.pelela"
+<input bind-value="name" placeholder="Tu nombre" />
+<p>Hola, <span bind-content="name"></span></p>
+```
+
+Usá getters para valores derivados:
+
+```ts title="app.ts"
+export class App {
+  name = ''
+
+  get greeting() {
+    return this.name ? `Hola, ${this.name}` : 'Escribí tu nombre'
+  }
+}
+```
+
+```html title="app.pelela"
+<p bind-content="greeting"></p>
+```
+
+<div class="exercise"><h3>Ejercicio</h3><p>Agregá un binding que muestre la cantidad de caracteres escritos en un input.</p></div>
+
+### Video relacionado
+
+[Pelela - Binding](https://www.youtube.com/watch?v=I2EzCmInWfM).

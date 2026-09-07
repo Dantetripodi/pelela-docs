@@ -1,0 +1,33 @@
+---
+title: Antes de Pelela
+description: La base de HTML y CSS que necesitás para construir interfaces.
+---
+
+## Antes de Pelela: maquetado
+
+Pelela no reemplaza HTML ni CSS. Los usa para agregar comportamiento. Por eso conviene llegar
+con una página estática clara y recién después conectarla con datos.
+
+## Checklist mínimo
+
+- HTML semántico: `header`, `main`, `section`, `form`, `button`.
+- CSS con clases claras, variables y estados visuales.
+- Flexbox para una dimensión; Grid para filas y columnas.
+- Diseño responsive: la interfaz debe seguir siendo usable en celular.
+- Accesibilidad básica: labels, foco visible, contraste y botones reales.
+
+```html
+<form class="task-form">
+  <label for="task">Nueva tarea</label>
+  <input id="task" name="task" type="text" />
+  <button type="submit">Agregar</button>
+</form>
+```
+
+Primero podés dejar ese formulario sin comportamiento. El siguiente paso será describir su
+estado y conectar el evento de submit con un ViewModel.
+
+<div class="exercise">
+  <h3>Ejercicio</h3>
+  <p>Maquetá una tarjeta de producto con nombre, precio, imagen y botón. Antes de Pelela, verificá que se entienda sin JavaScript.</p>
+</div>

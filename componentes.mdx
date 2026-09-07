@@ -1,0 +1,32 @@
+---
+title: Componentes
+description: Separar una interfaz en piezas reutilizables.
+---
+
+## Componentes
+
+Cuando una pantalla crece, separá una parte que tenga una responsabilidad clara. Los
+componentes de Pelela se comunican con propiedades y links al estado.
+
+```html
+<task-item prop-task="task" link-onToggle="selectedTask" />
+```
+
+La convención `prop-` pasa un dato del padre al hijo. La convención `link-` expresa una conexión
+de ida y vuelta: si el hijo modifica esa propiedad, el cambio también puede propagarse al padre.
+El nombre del tag se resuelve contra el componente registrado por Pelela.
+
+## Cómo decidir si extraer
+
+- ¿La parte tiene nombre propio?
+- ¿Se repite o tiene una lógica aislable?
+- ¿Podés describir sus entradas y salidas?
+
+Un componente bien separado no es solo un archivo más: es un contrato pequeño. Documentá qué
+recibe, qué muestra y qué eventos expone.
+
+<div class="exercise"><h3>Ejercicio</h3><p>Extraé el item de una lista de tareas y definí una prop para la tarea y un link para marcarla.</p></div>
+
+### Video relacionado
+
+[Pelela - Componentes](https://www.youtube.com/watch?v=6CGS_rud5Ws).

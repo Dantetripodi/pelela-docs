@@ -1,0 +1,31 @@
+---
+title: Errores comunes
+description: Diagnóstico rápido para problemas frecuentes.
+---
+
+## Errores comunes
+
+<table>
+  <thead><tr><th>Síntoma</th><th>Qué revisar</th></tr></thead>
+  <tbody>
+    <tr><td>La demo no monta</td><td><code>mountTemplate</code>, el root y el import del template</td></tr>
+    <tr><td>El click no responde</td><td><code>click</code>, nombre exacto del método y ViewModel registrado</td></tr>
+    <tr><td>El texto no cambia</td><td><code>bind-content</code> y nombre exacto de la propiedad</td></tr>
+    <tr><td>Un input no actualiza estado</td><td><code>bind-value</code>, tipo de elemento y propiedad inicial</td></tr>
+    <tr><td>Un componente no aparece</td><td>nombre, archivo/template y props esperadas</td></tr>
+    <tr><td>Una lista queda vacía</td><td>array inicial, <code>for-each</code> y nombre del item</td></tr>
+  </tbody>
+</table>
+
+## Técnica de depuración
+
+Reducí el caso a una propiedad, un binding y un evento. Si ese circuito funciona, agregá el
+resto de la pantalla de a una pieza. Mirá primero la consola y después la estructura generada.
+
+La documentación oficial del repositorio también separa arquitectura, binding/reactividad,
+componentes/routing, CLI y extensión de VS Code. Esas referencias sirven para profundizar
+cuando el concepto ya está claro.
+
+### Video relacionado
+
+[Pelela - Errores de desarrollo](https://www.youtube.com/watch?v=8zIrSjtblg8).

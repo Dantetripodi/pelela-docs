@@ -1,0 +1,53 @@
+---
+title: Renderizado condicional
+description: Mostrar u ocultar partes de la interfaz según el estado.
+---
+
+## Renderizado condicional
+
+Una interfaz no siempre muestra lo mismo. El binding `if` permite declarar que un bloque debe
+existir solo cuando una propiedad del ViewModel es verdadera.
+
+```html
+<button click="toggleDetails">Ver detalles</button>
+
+<section if="showDetails">
+  <h2 bind-content="title"></h2>
+  <p bind-content="description"></p>
+</section>
+```
+
+```ts
+export class App {
+  showDetails = false
+  title = 'Información extra'
+  description = 'Este bloque depende de showDetails.'
+
+  toggleDetails() {
+    this.showDetails = !this.showDetails
+  }
+}
+```
+
+### Qué ocurre
+
+Pelela observa la expresión y agrega o quita el bloque cuando cambia el estado. No hace falta
+buscar el elemento en el DOM ni modificar manualmente `style.display`.
+
+Pensalo como una pregunta sobre el estado:
+
+```text
+showDetails === true  → el bloque aparece
+showDetails === false → el bloque no se renderiza
+```
+
+### Buenas prácticas
+
+- Usá una propiedad booleana con un nombre que explique la condición.
+- Poné en el bloque solo el contenido que depende de esa condición.
+- Separá “qué se muestra” de “qué evento cambia la condición”.
+- Probá siempre los dos estados, incluido el estado inicial.
+
+### Video relacionado
+
+Miralo como complemento: [Pelela - if / renderizado condicional](https://www.youtube.com/watch?v=PuwW3YbIaHs).

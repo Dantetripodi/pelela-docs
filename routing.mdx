@@ -1,0 +1,51 @@
+---
+title: Routing
+description: Organizar una aplicación en pantallas y navegación.
+---
+
+## Routing
+
+El routing conecta una URL con una pantalla. Pensalo como una decisión de arquitectura: cada
+ruta debe tener un propósito y una forma clara de obtener sus parámetros.
+
+## Checklist de una ruta
+
+- Nombre y URL legibles.
+- Estado inicial definido.
+- Qué ocurre si falta un parámetro.
+- Navegación de ida y vuelta.
+- Estado de carga, vacío y error.
+
+Los ejemplos del repositorio de Pelela incluyen routing simple, parámetros y routing avanzado.
+Usalos como laboratorio después de dominar estado, bindings y componentes.
+
+```text
+/              → inicio
+/tasks         → listado
+/tasks/:id     → detalle
+```
+
+Una definición de rutas puede incluir parámetros dinámicos y una ruta comodín al final:
+
+```ts
+import { router } from 'pelelajs'
+
+export const routes = [
+  { path: '/', component: Home },
+  { path: '/tasks/:id', component: TaskDetail },
+  { path: '*', component: Home },
+]
+```
+
+El router usa la primera coincidencia. Por eso la ruta comodín debe quedar última. Desde un
+ViewModel, los parámetros se consultan con `router.urlParameters()` y los de la query con
+`router.searchParameters()`.
+
+No mezcles routing con la lógica del dominio: una pantalla puede pedir datos y mostrar estados,
+pero las decisiones de navegación conviene mantenerlas explícitas.
+
+<div class="exercise"><h3>Ejercicio</h3><p>Diseñá las rutas de una mini app de notas y escribí qué debería verse en cada estado.</p></div>
+
+### Video relacionado
+
+[Pelela - Routing](https://www.youtube.com/watch?v=sJMzgAMlxlY).

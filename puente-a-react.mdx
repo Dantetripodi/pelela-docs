@@ -1,0 +1,33 @@
+---
+title: Puente hacia React
+description: Qué conceptos de PelelaJS reaparecen al aprender React.
+---
+
+## Del modelo Pelela a React
+
+Pelela funciona como puente pedagógico porque obliga a separar ideas que después aparecen con
+otra sintaxis en React.
+
+<table>
+  <thead><tr><th>Idea</th><th>PelelaJS</th><th>React</th></tr></thead>
+  <tbody>
+    <tr><td>Estado</td><td>propiedades del ViewModel</td><td><code>useState</code> / estado del componente</td></tr>
+    <tr><td>Vista</td><td>template <code>.pelela</code></td><td>JSX</td></tr>
+    <tr><td>Evento</td><td><code>click="increment"</code></td><td><code>onClick={'{increment}'}</code></td></tr>
+    <tr><td>Dato derivado</td><td>getter</td><td>variable calculada o <code>useMemo</code></td></tr>
+    <tr><td>Repetición</td><td><code>for-each</code></td><td><code>map</code></td></tr>
+    <tr><td>Composición</td><td><code>component</code></td><td>componentes React</td></tr>
+  </tbody>
+</table>
+
+La diferencia importante no es memorizar una tabla: es reconocer el flujo de datos. Si ya podés
+explicar “qué estado cambia, por qué evento y qué parte se actualiza”, el salto de sintaxis es
+mucho más chico.
+
+## Qué estudiar después
+
+1. Componentes y props.
+2. Estado local y eventos.
+3. Renderizado de listas y keys.
+4. Formularios.
+5. Routing y manejo de estados de carga/error.

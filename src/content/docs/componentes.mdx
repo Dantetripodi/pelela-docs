@@ -6,7 +6,8 @@ description: Separar una interfaz en piezas reutilizables.
 ## Componentes
 
 Cuando una pantalla crece, separá una parte que tenga una responsabilidad clara. Un componente de
-Pelela tiene su propio ViewModel y un template cuya raíz es `<component>`.
+Pelela tiene su propio ViewModel. Por convención, el template de un componente reutilizable usa
+`<component>` como raíz.
 
 Por ejemplo, estos dos archivos definen un componente llamado `CounterSelector`:
 
@@ -46,6 +47,30 @@ El nombre de la clase se transforma a kebab-case para usarla desde otro template
 Los componentes personalizados deben tener un tag de cierre. `<counter-selector />` no es válido:
 en HTML solo los elementos void, como `input` e `img`, pueden escribirse sin cierre.
 
+## Registro de componentes
+
+Para que Pelela encuentre los componentes, la aplicación debe importar una vez el módulo de
+registro automático:
+
+```ts
+import 'virtual:pelela-auto-register'
+```
+
+El plugin de Vite busca pares de archivos `.ts` y `.pelela` con el mismo nombre dentro de `src`.
+El nombre declarado en `view-model` determina el tag del componente.
+
+Por ejemplo:
+
+- `counter-selector.ts`
+- `counter-selector.pelela`
+- `<component view-model="CounterSelector">`
+
+registran el tag `<counter-selector>`. Si existe un archivo CSS con el mismo nombre junto al `.ts`
+y al `.pelela`, el plugin también lo asocia con el componente.
+
+Sin la importación de `virtual:pelela-auto-register`, los tags no quedan registrados. Usar un tag
+no estándar que no corresponde a un componente registrado produce un error durante el montaje.
+
 ## Comunicación entre padre e hijo
 
 Pelela ofrece tres formas de asignar propiedades del ViewModel hijo:
@@ -71,10 +96,16 @@ Las propiedades receptoras deben existir en la instancia hija antes del montaje.
 declara `prop-total`, pero la clase hija no declara `total`, Pelela muestra un error indicando que
 la propiedad es desconocida.
 
+Los valores de `prop-*` y `link-*` pueden indicar rutas anidadas del padre. Por ejemplo,
+`prop-errors="bet.errors"` asigna al hijo el valor de `errors` dentro de `bet`. Cuando se usa una
+propiedad simple del padre, esa propiedad debe existir; de lo contrario, Pelela falla durante el
+montaje.
+
 ### Propiedades de una sola dirección
 
-Con `prop-*`, los cambios del padre actualizan al hijo. Si el hijo reemplaza el valor de su propia
-propiedad, ese cambio no se copia de vuelta al padre.
+Con `prop-*`, los cambios del padre actualizan al hijo. Si el hijo modifica su propiedad, el cambio
+no se copia al padre. Además, una actualización posterior del padre puede volver a sobrescribir ese
+valor en el hijo.
 
 ```html
 <user-card prop-user="selectedUser"></user-card>
@@ -89,8 +120,8 @@ un evento ni una función callback: es una conexión bidireccional entre dos pro
 <counter-selector link-value="selectedIndex"></counter-selector>
 ```
 
-Pelela no tiene una API para emitir eventos personalizados desde componentes. Para comunicar un
-cambio del hijo al padre, el mecanismo disponible es `link-*`.
+Pelela no tiene una API específica para emitir eventos personalizados desde componentes. La forma
+idiomática de comunicar cambios de estado al padre es `link-*`.
 
 ### Valores constantes
 
@@ -100,6 +131,21 @@ objetos ni expresiones de JavaScript.
 
 ```html
 <rating-badge const-maximum="5" const-label="Puntuación"></rating-badge>
+```
+
+## Ciclo de vida
+
+Cada aparición del tag crea una instancia nueva del ViewModel hijo. Pelela instala sus bindings,
+asigna `prop-*`, `link-*` y `const-*` y, si el hijo define `initialize()`, lo ejecuta después.
+
+```ts
+export class CounterSelector {
+  value = 0
+
+  initialize() {
+    // Properties received from the parent are already available here.
+  }
+}
 ```
 
 ## Atributos permitidos
@@ -128,7 +174,7 @@ Pelela lo reemplaza por el template registrado y no implementa slots.
 Un componente bien separado no es solo un archivo más: es un contrato pequeño. Documentá qué
 propiedades recibe, cuáles puede modificar mediante links y qué muestra.
 
-<div class="exercise"><h3>Ejercicio</h3><p>Extraé el item de una lista de tareas. Usá una prop para recibir la tarea y un link booleano para comunicar si quedó seleccionada.</p></div>
+<div class="exercise"><h3>Ejercicio</h3><p>Extraé el item de una lista de tareas. Usá una prop para recibir la tarea y un link booleano, definido en el padre, para comunicar si quedó seleccionada.</p></div>
 
 ### Video relacionado
 

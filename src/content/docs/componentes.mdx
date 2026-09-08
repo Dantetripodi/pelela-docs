@@ -5,16 +5,165 @@ description: Separar una interfaz en piezas reutilizables.
 
 ## Componentes
 
-Cuando una pantalla crece, separá una parte que tenga una responsabilidad clara. Los
-componentes de Pelela se comunican con propiedades y links al estado.
+Cuando una pantalla crece, separá una parte que tenga una responsabilidad clara. Un componente de
+Pelela tiene su propio ViewModel. Por convención, el template de un componente reutilizable usa
+`<component>` como raíz.
 
-```html
-<task-item prop-task="task" link-onToggle="selectedTask" />
+Por ejemplo, estos dos archivos definen un componente llamado `CounterSelector`:
+
+```ts title="counter-selector.ts"
+export class CounterSelector {
+  value = 0
+  total = 0
+  label = ''
+
+  increment() {
+    if (this.value < this.total) this.value++
+  }
+}
 ```
 
-La convención `prop-` pasa un dato del padre al hijo. La convención `link-` expresa una conexión
-de ida y vuelta: si el hijo modifica esa propiedad, el cambio también puede propagarse al padre.
-El nombre del tag se resuelve contra el componente registrado por Pelela.
+```html title="counter-selector.pelela"
+<component view-model="CounterSelector">
+  <div class="counter-selector">
+    <span bind-content="label"></span>
+    <strong bind-content="value"></strong>
+    <button click="increment">Sumar</button>
+  </div>
+</component>
+```
+
+El nombre de la clase se transforma a kebab-case para usarla desde otro template:
+`CounterSelector` se invoca como `<counter-selector>`.
+
+```html title="home.pelela"
+<counter-selector
+  link-value="selectedIndex"
+  prop-total="totalPeople"
+  const-label="Persona"
+></counter-selector>
+```
+
+Los componentes personalizados deben tener un tag de cierre. `<counter-selector />` no es válido:
+en HTML solo los elementos void, como `input` e `img`, pueden escribirse sin cierre.
+
+## Registro de componentes
+
+Para que Pelela encuentre los componentes, la aplicación debe importar una vez el módulo de
+registro automático:
+
+```ts
+import 'virtual:pelela-auto-register'
+```
+
+El plugin de Vite busca pares de archivos `.ts` y `.pelela` con el mismo nombre dentro de `src`.
+El nombre declarado en `view-model` determina el tag del componente.
+
+Por ejemplo:
+
+- `counter-selector.ts`
+- `counter-selector.pelela`
+- `<component view-model="CounterSelector">`
+
+registran el tag `<counter-selector>`. Si existe un archivo CSS con el mismo nombre junto al `.ts`
+y al `.pelela`, el plugin también lo asocia con el componente.
+
+Sin la importación de `virtual:pelela-auto-register`, los tags no quedan registrados. Usar un tag
+no estándar que no corresponde a un componente registrado produce un error durante el montaje.
+
+## Comunicación entre padre e hijo
+
+Pelela ofrece tres formas de asignar propiedades del ViewModel hijo:
+
+| Prefijo | Flujo | Uso |
+| --- | --- | --- |
+| `prop-*` | Padre → hijo | El hijo recibe una propiedad reactiva del padre. |
+| `link-*` | Padre ↔ hijo | Ambos ViewModels mantienen sincronizada una propiedad. |
+| `const-*` | Valor fijo → hijo | El hijo recibe un string o número al inicializarse. |
+
+En el ejemplo anterior:
+
+- `link-value="selectedIndex"` conecta `selectedIndex` del padre con `value` del hijo;
+- `prop-total="totalPeople"` envía `totalPeople` al campo `total`;
+- `const-label="Persona"` asigna el texto `Persona` al campo `label`.
+
+La parte posterior al prefijo se escribe en kebab-case y Pelela la transforma a camelCase. Por
+ejemplo, `prop-selected-index` se asigna a la propiedad `selectedIndex` del hijo. No uses
+`prop-selectedIndex`: el navegador convierte los nombres de atributos a minúsculas antes de que
+Pelela pueda leerlos.
+
+Las propiedades receptoras deben existir en la instancia hija antes del montaje. Si el template
+declara `prop-total`, pero la clase hija no declara `total`, Pelela muestra un error indicando que
+la propiedad es desconocida.
+
+Los valores de `prop-*` y `link-*` pueden indicar rutas anidadas del padre. Por ejemplo,
+`prop-errors="bet.errors"` asigna al hijo el valor de `errors` dentro de `bet`. Cuando se usa una
+propiedad simple del padre, esa propiedad debe existir; de lo contrario, Pelela falla durante el
+montaje.
+
+### Propiedades de una sola dirección
+
+Con `prop-*`, los cambios del padre actualizan al hijo. Si el hijo modifica su propiedad, el cambio
+no se copia al padre. Además, una actualización posterior del padre puede volver a sobrescribir ese
+valor en el hijo.
+
+```html
+<user-card prop-user="selectedUser"></user-card>
+```
+
+### Propiedades bidireccionales
+
+Usá `link-*` cuando una acción del hijo deba modificar el mismo estado que posee el padre. No es
+un evento ni una función callback: es una conexión bidireccional entre dos propiedades.
+
+```html
+<counter-selector link-value="selectedIndex"></counter-selector>
+```
+
+Pelela no tiene una API específica para emitir eventos personalizados desde componentes. La forma
+idiomática de comunicar cambios de estado al padre es `link-*`.
+
+### Valores constantes
+
+`const-*` se asigna una sola vez y no crea una relación reactiva. Los valores que representan un
+número se convierten a `number`; los demás permanecen como strings. No interpreta booleanos,
+objetos ni expresiones de JavaScript.
+
+```html
+<rating-badge const-maximum="5" const-label="Puntuación"></rating-badge>
+```
+
+## Ciclo de vida
+
+Cada aparición del tag crea una instancia nueva del ViewModel hijo. Pelela instala sus bindings,
+asigna `prop-*`, `link-*` y `const-*` y, si el hijo define `initialize()`, lo ejecuta después.
+
+```ts
+export class CounterSelector {
+  value = 0
+
+  initialize() {
+    // Properties received from the parent are already available here.
+  }
+}
+```
+
+## Atributos permitidos
+
+Sobre el tag que invoca un componente solo se permiten `prop-*`, `link-*`, `const-*` e `if`. No
+agregues directamente `class`, `id`, `data-*`, bindings ni eventos al tag personalizado.
+
+```html
+<!-- Correcto: la condición pertenece al ViewModel padre -->
+<user-card if="hasSelectedUser" prop-user="selectedUser"></user-card>
+
+<!-- Incorrecto: class y click no son atributos válidos de un componente -->
+<user-card class="featured" click="selectUser"></user-card>
+```
+
+Colocá clases, atributos HTML y eventos dentro del template propio del componente. El contenido
+escrito entre la apertura y el cierre de la invocación tampoco se proyecta dentro del componente:
+Pelela lo reemplaza por el template registrado y no implementa slots.
 
 ## Cómo decidir si extraer
 
@@ -23,9 +172,9 @@ El nombre del tag se resuelve contra el componente registrado por Pelela.
 - ¿Podés describir sus entradas y salidas?
 
 Un componente bien separado no es solo un archivo más: es un contrato pequeño. Documentá qué
-recibe, qué muestra y qué eventos expone.
+propiedades recibe, cuáles puede modificar mediante links y qué muestra.
 
-<div class="exercise"><h3>Ejercicio</h3><p>Extraé el item de una lista de tareas y definí una prop para la tarea y un link para marcarla.</p></div>
+<div class="exercise"><h3>Ejercicio</h3><p>Extraé el item de una lista de tareas. Usá una prop para recibir la tarea y un link booleano, definido en el padre, para comunicar si quedó seleccionada.</p></div>
 
 ### Video relacionado
 

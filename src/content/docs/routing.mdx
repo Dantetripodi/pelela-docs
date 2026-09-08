@@ -1,51 +1,330 @@
 ---
 title: Routing
-description: Organizar una aplicación en pantallas y navegación.
+description: Definir rutas, navegar, leer parámetros y componer pantallas con layouts en PelelaJS.
 ---
 
-## Routing
+El router de PelelaJS relaciona la URL del navegador con un componente. También permite definir
+parámetros dinámicos, consultas, rutas comodín y layouts compartidos.
 
-El routing conecta una URL con una pantalla. Pensalo como una decisión de arquitectura: cada
-ruta debe tener un propósito y una forma clara de obtener sus parámetros.
+## Ejemplo mínimo completo
 
-## Checklist de una ruta
+Este ejemplo puede copiarse en un proyecto creado con la CLI. Todos los archivos quedan
+directamente dentro de `src/`, que es donde el autorregistro de PelelaJS 1.1.0 los detecta.
 
-- Nombre y URL legibles.
-- Estado inicial definido.
-- Qué ocurre si falta un parámetro.
-- Navegación de ida y vuelta.
-- Estado de carga, vacío y error.
-
-Los ejemplos del repositorio de Pelela incluyen routing simple, parámetros y routing avanzado.
-Usalos como laboratorio después de dominar estado, bindings y componentes.
-
-```text
-/              → inicio
-/tasks         → listado
-/tasks/:id     → detalle
-```
-
-Una definición de rutas puede incluir parámetros dinámicos y una ruta comodín al final:
+### `src/home.ts`
 
 ```ts
 import { router } from 'pelelajs'
 
-export const routes = [
+export class Home {
+  title = 'Mis tareas'
+
+  openTask() {
+    router.navigateTo('/tasks/42?from=home')
+  }
+}
+```
+
+### `src/home.pelela`
+
+```html
+<pelela view-model="Home">
+  <main>
+    <h1 bind-content="title"></h1>
+    <button click="openTask">Abrir tarea 42</button>
+  </main>
+</pelela>
+```
+
+### `src/task-detail.ts`
+
+```ts
+import { router } from 'pelelajs'
+
+export class TaskDetail {
+  taskId = ''
+  origin = ''
+
+  initialize() {
+    this.taskId = router.urlParameters().id
+    this.origin = router.searchParameters().from ?? 'direct'
+  }
+
+  goHome() {
+    router.navigateTo('/')
+  }
+}
+```
+
+### `src/task-detail.pelela`
+
+```html
+<pelela view-model="TaskDetail">
+  <main>
+    <h1>Detalle de la tarea</h1>
+    <p>ID: <strong bind-content="taskId"></strong></p>
+    <p>Origen: <span bind-content="origin"></span></p>
+    <button click="goHome">Volver al inicio</button>
+  </main>
+</pelela>
+```
+
+### `src/not-found.ts`
+
+```ts
+export class NotFound {}
+```
+
+### `src/not-found.pelela`
+
+```html
+<pelela view-model="NotFound">
+  <main>
+    <h1>Página no encontrada</h1>
+  </main>
+</pelela>
+```
+
+### `src/routes.ts`
+
+```ts
+import type { RouteDefinition } from 'pelelajs'
+import { Home } from './home'
+import { NotFound } from './not-found'
+import { TaskDetail } from './task-detail'
+
+export const routes: RouteDefinition[] = [
   { path: '/', component: Home },
   { path: '/tasks/:id', component: TaskDetail },
-  { path: '*', component: Home },
+  { path: '*', component: NotFound },
 ]
 ```
 
-El router usa la primera coincidencia. Por eso la ruta comodín debe quedar última. Desde un
-ViewModel, los parámetros se consultan con `router.urlParameters()` y los de la query con
-`router.searchParameters()`.
+### `main.ts`
 
-No mezcles routing con la lógica del dominio: una pantalla puede pedir datos y mostrar estados,
-pero las decisiones de navegación conviene mantenerlas explícitas.
+```ts
+import { router } from 'pelelajs'
+import 'virtual:pelela-auto-register'
+import { routes } from './src/routes'
+import './src/global.css'
 
-<div class="exercise"><h3>Ejercicio</h3><p>Diseñá las rutas de una mini app de notas y escribí qué debería verse en cada estado.</p></div>
+const app = document.querySelector<HTMLElement>('#app')
+
+if (!app) {
+  throw new Error('No se encontró #app')
+}
+
+router.start(app, routes)
+```
+
+El import virtual debe ejecutarse antes de `router.start`: registra las parejas `.ts` y `.pelela`
+que utilizarán las rutas. `router.start` toma el contenedor, busca la primera ruta que coincida con
+la URL actual y monta allí su componente.
+
+:::caution
+No combines `mountTemplate` y `router.start` para montar la misma aplicación. Usá
+`mountTemplate` para una única pantalla sin rutas, o `router.start` cuando la URL determine qué
+pantalla se muestra.
+:::
+
+## Navegación
+
+`router.navigateTo(path)` agrega una entrada al historial del navegador y renderiza la nueva ruta:
+
+```ts
+router.navigateTo('/tasks/42')
+router.navigateTo('/tasks/42?from=search')
+```
+
+Los botones Atrás y Adelante funcionan mediante el evento `popstate`; no hace falta agregar un
+listener propio.
+
+PelelaJS no intercepta los enlaces HTML. Un `<a href="/tasks/42">` realiza una navegación normal
+del navegador y puede pedir esa URL al servidor. Para navegar sin recargar la página, invocá
+`router.navigateTo` desde un handler `click`.
+
+`navigateTo` requiere que `router.start` se haya ejecutado. Si se invoca antes, PelelaJS muestra
+su pantalla de error.
+
+## Parámetros de ruta y query string
+
+Los segmentos que empiezan con `:` son parámetros dinámicos:
+
+```ts
+const routes: RouteDefinition[] = [
+  { path: '/tasks/:id', component: TaskDetail },
+]
+```
+
+Para `/tasks/42?from=home`, el componente puede leer:
+
+```ts
+const { id } = router.urlParameters()       // { id: '42' }
+const { from } = router.searchParameters()  // { from: 'home' }
+```
+
+Ambos métodos devuelven `Record<string, string>`. Los parámetros de ruta se decodifican antes de
+entregarse. Si una clave de la query aparece más de una vez, el objeto conserva el último valor;
+esta API no representa una misma clave como array.
+
+## Orden y rutas comodín
+
+El router evalúa las rutas en el orden declarado y usa la primera coincidencia. Ubicá las rutas
+más específicas antes de las generales y el fallback al final.
+
+```ts
+export const routes: RouteDefinition[] = [
+  { path: '/docs/getting-started', component: GettingStarted },
+  { path: '/docs/*', component: Docs },
+  { path: '*', component: NotFound },
+]
+```
+
+- `*` coincide con cualquier URL.
+- `/docs/*` coincide con cualquier ruta bajo `/docs`.
+- Los comodines con prefijo también pueden contener parámetros, por ejemplo
+  `/organizations/:organizationId/*`.
+- Una barra final es opcional: `/tasks` también coincide con `/tasks/`.
+
+Si ninguna ruta coincide y no existe un fallback `*`, PelelaJS muestra su pantalla de error.
+
+## Layouts
+
+Un layout es un componente que conserva una estructura compartida —por ejemplo, navegación y pie
+de página— mientras una ruta hija ocupa su `<outlet>`.
+
+### `src/app-layout.ts`
+
+```ts
+export class AppLayout {
+  applicationName = 'Tareas'
+}
+```
+
+### `src/app-layout.pelela`
+
+```html
+<component view-model="AppLayout">
+  <header>
+    <strong bind-content="applicationName"></strong>
+  </header>
+
+  <outlet></outlet>
+
+  <footer>Hecho con PelelaJS</footer>
+</component>
+```
+
+La ruta declara el layout y sus rutas hijas:
+
+```ts
+import type { RouteDefinition } from 'pelelajs'
+import { AppLayout } from './app-layout'
+import { Home } from './home'
+import { NotFound } from './not-found'
+import { TaskDetail } from './task-detail'
+
+export const routes: RouteDefinition[] = [
+  {
+    path: '/',
+    layout: AppLayout,
+    children: [
+      { path: '/', component: Home },
+      { path: '/tasks/:id', component: TaskDetail },
+    ],
+  },
+  { path: '*', component: NotFound },
+]
+```
+
+El router concatena el `path` del layout con el de cada hija. Por ejemplo, un layout con
+`path: '/admin'` y una hija con `path: 'users'` produce `/admin/users`. Las barras duplicadas se
+normalizan, por lo que `path: '/users'` en la hija produce el mismo resultado.
+
+### Datos entre el layout y la pantalla
+
+Los atributos del `<outlet>` se transfieren al componente de la ruta hija:
+
+```html
+<outlet
+  prop-application-name="applicationName"
+  link-current-user="currentUser"
+  const-density="compact"
+></outlet>
+```
+
+- `prop-*` envía estado del layout hacia la pantalla.
+- `link-*` sincroniza estado en ambas direcciones.
+- `const-*` envía un literal constante.
+
+La propiedad receptora debe existir previamente en el ViewModel de la pantalla hija. Como en
+cualquier componente, el nombre kebab-case se convierte a camelCase:
+`prop-application-name` asigna `applicationName`.
+
+### Restricciones de los layouts
+
+En PelelaJS 1.1.0:
+
+- el template del layout debe contener exactamente un `<outlet>`;
+- el `<outlet>` debe estar vacío;
+- una ruta con `layout` debe incluir al menos una ruta hija;
+- una ruta hija no puede declararse sin un layout padre;
+- una ruta con `children` no puede declarar también `component`;
+- los layouts anidados no están soportados;
+- sobre `<outlet>` solo se admiten `prop-*`, `link-*` y `const-*`.
+
+## CSS al cambiar de ruta
+
+El plugin asocia automáticamente el CSS que tenga el mismo basename que cada componente. Por
+ejemplo, `task-detail.css` acompaña a `task-detail.ts` y `task-detail.pelela`.
+
+Al navegar, el router carga el CSS de la pantalla, del layout y de sus componentes hijos, y quita
+los estilos de la ruta anterior. Un CSS global importado desde `main.ts` no forma parte de ese
+ciclo y permanece cargado.
+
+Los selectores CSS no están encapsulados. Aunque sus archivos se carguen por ruta, conviene usar
+nombres de clase específicos para evitar colisiones.
+
+## Desplegar una SPA
+
+Una navegación directa o un refresh en `/tasks/42` llega primero al servidor. El servidor debe
+devolver el `index.html` de la aplicación para toda URL que no corresponda a un archivo estático;
+recién entonces PelelaJS puede resolver la ruta en el navegador.
+
+La configuración se suele llamar **SPA fallback**, **history fallback** o **rewrite to
+`index.html`**. Sin ella, la navegación mediante `router.navigateTo` puede funcionar, pero un
+refresh en la misma URL devolverá un 404 del servidor.
+
+### Aplicaciones publicadas bajo un subdirectorio
+
+El router no tiene una opción `base`. Si la aplicación vive en `/mi-app`, ese prefijo forma parte
+del `pathname` y debe aparecer tanto en las rutas como en las navegaciones:
+
+```ts
+const basePath = '/mi-app'
+
+export const routes: RouteDefinition[] = [
+  { path: basePath, component: Home },
+  { path: `${basePath}/tasks/:id`, component: TaskDetail },
+  { path: `${basePath}/*`, component: NotFound },
+]
+
+router.navigateTo(`${basePath}/tasks/42`)
+```
+
+Configurá además el mismo base path en Vite o en el hosting para que los assets se carguen desde
+la ubicación correcta, y dirigí el fallback del servidor al `index.html` de ese subdirectorio.
+
+## Lista de comprobación
+
+- Registrá todos los componentes antes de iniciar el router.
+- Llamá una sola vez a `router.start` con el contenedor correcto.
+- Ordená las rutas desde la más específica hasta el fallback.
+- Definí cada ruta hija en relación con el `path` de su layout.
+- Navegá con `router.navigateTo` para evitar recargas.
+- Configurá un fallback a `index.html` en producción.
 
 ### Video relacionado
 
-[Pelela - Routing](https://www.youtube.com/watch?v=sJMzgAMlxlY).
+[Pelela - Routing](https://www.youtube.com/watch?v=sJMzgAMlxlY) es material complementario. Ante
+cualquier diferencia, esta página describe el comportamiento de PelelaJS 1.1.0.

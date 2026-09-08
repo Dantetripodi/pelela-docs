@@ -1,58 +1,96 @@
 ---
-title: Instalación
-description: Cómo preparar un proyecto PelelaJS con Vite.
+title: Instalación y Quick Start
+description: Cómo crear una aplicación con el CLI o agregar PelelaJS a un proyecto existente.
 ---
 
-## Instalación
+## Requisitos
 
-La forma recomendada para trabajar los ejemplos es un proyecto Vite con el paquete de PelelaJS
-y su plugin oficial.
+Antes de empezar, verificá que tu entorno tenga:
 
-Necesitás Node.js 22 o superior y `pnpm`. También podés instalar la CLI global para generar un
-proyecto inicial:
+- Node.js 22 o superior;
+- pnpm 10 o superior.
 
-```bash
-pnpm add -g pelelajs
-pelela init MiApp
-```
-
-La CLI crea una estructura mínima basada en un template. Si preferís entender cada archivo desde
-el comienzo, podés armar la estructura manualmente con los pasos de esta página.
+Podés comprobar las versiones instaladas con:
 
 ```bash
-pnpm add pelelajs
-pnpm add -D vite-plugin-pelelajs typescript
+node --version
+pnpm --version
 ```
 
-## Estructura recomendada
+## Crear una aplicación con el CLI
 
-Separá la estructura visual, el estado y los estilos. Así cada archivo tiene una responsabilidad
-fácil de explicar y la aplicación puede crecer sin convertirse en un único archivo enorme.
+El CLI es el recorrido recomendado para crear una aplicación nueva. Genera un proyecto completo
+con Vite, TypeScript, PelelaJS, el plugin oficial y un ejemplo inicial.
+
+Instalá el CLI globalmente:
+
+```bash
+pnpm add -g @pelelajs/cli
+```
+
+Creá el proyecto y ejecutalo:
+
+```bash
+pelela init "Mi App"
+cd mi-app
+pnpm install
+pnpm dev
+```
+
+Abrí la dirección que informa Vite, normalmente `http://localhost:5173`.
+
+El CLI normaliza el nombre recibido para que pueda utilizarse como nombre de directorio y de
+paquete: lo convierte a minúsculas, reemplaza espacios y caracteres no admitidos por guiones, y
+elimina guiones repetidos o ubicados en los extremos. Por eso `"Mi App"` crea `mi-app`.
+
+El proyecto generado ya incluye:
+
+- los scripts `dev`, `build` y `preview`;
+- el plugin de PelelaJS configurado en Vite;
+- las declaraciones de TypeScript para los templates `.pelela` y el módulo virtual;
+- una pantalla de ejemplo;
+- un archivo de rutas y el inicio del router.
+
+La estructura resultante contiene los archivos de integración necesarios:
 
 ```text
 mi-app/
-├── index.html             # punto de montaje: <div id="app">
-├── vite.config.ts         # plugin de PelelaJS
-├── package.json            # dependencias y scripts
+├── index.html
+├── main.ts                 # punto de entrada y montaje/router
+├── routes.ts               # rutas de la aplicación
+├── vite.config.ts          # plugin de PelelaJS
+├── tsconfig.json
+├── pelela-env.d.ts         # tipos de .pelela y del módulo virtual
+├── package.json
+├── styles.css              # estilos globales importados por main.ts
 └── src/
-    ├── app.pelela          # estructura HTML y bindings
-    ├── app.ts              # ViewModel, estado y eventos
-    ├── styles.css          # apariencia de la pantalla
-    └── components/         # piezas reutilizables cuando crezca la app
+    ├── components/         # componentes reutilizables
+    ├── app.pelela          # template
+    ├── app.ts              # ViewModel
+    └── app.css             # CSS asociado automáticamente a App
 ```
 
-El recorrido de una interacción queda así:
+No necesitás crear ni configurar esos archivos a mano cuando usás el CLI.
 
-```text
-usuario → evento en app.pelela → método en app.ts → cambio de estado → binding actualizado
+## Agregar PelelaJS a un proyecto existente
+
+Si ya tenés un proyecto con Vite y TypeScript, podés incorporar PelelaJS sin generar una
+aplicación nueva. Este recorrido contiene únicamente los cambios necesarios para integrarlo.
+
+### Instalar las dependencias
+
+```bash
+pnpm add pelelajs
+pnpm add -D vite-plugin-pelelajs
 ```
 
-Para los primeros ejercicios alcanza con `app.pelela`, `app.ts` y `styles.css`. Agregá
-`components/` cuando una parte tenga nombre propio, se repita o tenga una responsabilidad aislable.
+Si el proyecto todavía no usa TypeScript, instalalo también como dependencia de desarrollo.
 
-En `vite.config.ts` se agrega el plugin:
+### Agregar el plugin de Vite
 
-```ts
+El plugin transforma los templates `.pelela` y genera el módulo de autorregistro.
+
+```ts title="vite.config.ts"
 import { defineConfig } from 'vite'
 import { pelelajsPlugin } from 'vite-plugin-pelelajs'
 
@@ -61,22 +99,144 @@ export default defineConfig({
 })
 ```
 
-El plugin procesa los templates `.pelela` y registra los ViewModels que encuentra en `src`.
-Para empezar, mantené cada demo pequeña y con nombres fáciles de ubicar.
+Este paso es exclusivo de la integración manual. El CLI ya genera `vite.config.ts` con el plugin
+configurado.
 
-## Primer montaje
+### Declarar los módulos de PelelaJS
 
-```ts
-import { mountTemplate } from 'pelelajs'
-import template from './app.pelela'
-import 'virtual:pelela-auto-register'
+TypeScript no conoce por sí mismo los archivos `.pelela` ni el módulo virtual del plugin. Agregá
+estas declaraciones en `pelela-env.d.ts`:
 
-mountTemplate(document.querySelector('#app')!, template)
+```ts title="pelela-env.d.ts"
+declare module '*.pelela' {
+  export const viewModelName: string
+  const template: string
+  export default template
+}
+
+declare module 'virtual:pelela-auto-register' {
+  export {}
+}
 ```
+
+El CLI también genera este archivo automáticamente.
+
+### Crear el ViewModel y el template
+
+El nombre indicado por `view-model` debe coincidir exactamente con el nombre exportado por la
+clase.
+
+```ts title="src/app.ts"
+export class App {
+  message = 'Hola, PelelaJS'
+
+  changeMessage() {
+    this.message = 'La vista se actualizó'
+  }
+}
+```
+
+```html title="src/app.pelela"
+<pelela view-model="App">
+  <main class="card">
+    <h1 bind-content="message"></h1>
+    <button click="changeMessage">Cambiar mensaje</button>
+  </main>
+</pelela>
+```
+
+El CSS que comparte el mismo nombre base que el template se asocia automáticamente con ese
+componente:
+
+```css title="src/app.css"
+.card {
+  max-width: 32rem;
+  margin: 4rem auto;
+  padding: 2rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 0.75rem;
+}
+```
+
+La asociación determina cuándo se carga la hoja de estilo, pero no encapsula ni transforma sus
+selectores. Usá clases específicas para evitar colisiones entre componentes.
+
+Los estilos globales no se asocian a un componente. Por eso se importan expresamente desde
+`main.ts`:
+
+```css title="styles.css"
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+
+button {
+  padding: 0.6rem 1rem;
+}
+```
+
+### Iniciar PelelaJS
+
+El HTML del proyecto debe tener un elemento que funcione como raíz, por ejemplo
+`<div id="app"></div>`. Después importá el autorregistro y montá el template desde el punto de
+entrada:
+
+```ts title="main.ts"
+import './styles.css'
+import { mountTemplate } from 'pelelajs'
+import 'virtual:pelela-auto-register'
+import template from './src/app.pelela'
+
+const root = document.getElementById('app')
+
+if (!root) {
+  throw new Error('No se encontró el elemento #app')
+}
+
+mountTemplate(root, template)
+```
+
+El import `virtual:pelela-auto-register` ejecuta el código generado por el plugin para registrar
+los ViewModels y componentes detectados. Debe ejecutarse antes de montar el template o iniciar el
+router. Este código corresponde a la integración manual; el proyecto generado por el CLI ya usa
+el autorregistro e inicia el router.
+
+## Contrato del autorregistro
+
+El autorregistro actual no recorre subdirectorios. Para que una pantalla o componente sea
+detectado automáticamente debe cumplir todas estas condiciones:
+
+1. Los archivos `.ts` y `.pelela` deben estar directamente dentro de `src`.
+2. Ambos archivos deben compartir exactamente el mismo nombre base, por ejemplo `app.ts` y
+   `app.pelela`.
+3. El archivo TypeScript debe exportar una clase cuyo nombre coincida exactamente con el
+   `view-model` del template.
+4. Escribí `view-model` con comillas dobles. El autorregistro actual utiliza esa forma para
+   descubrir el nombre de la clase.
+5. El CSS es opcional. Si existe, debe compartir el mismo nombre base y estar junto al par, por
+   ejemplo `app.css`.
+
+Por el momento, no coloques pares que dependan del autorregistro dentro de `src/components/` u
+otro subdirectorio: el plugin no los encontrará. Una estructura con subdirectorios requiere
+registrar esos componentes manualmente.
+
+## `mountTemplate` o `router.start`
+
+Usá `mountTemplate(root, template)` cuando la aplicación tenga una única pantalla o cuando estés
+aprendiendo los fundamentos sin navegación.
+
+Usá `router.start(root, routes)` cuando la aplicación tenga varias rutas. En ese caso:
+
+- registrá primero las pantallas mediante `virtual:pelela-auto-register`;
+- definí un arreglo de rutas;
+- no llames también a `mountTemplate`, porque el router se ocupa de montar la ruta activa.
+
+El proyecto creado por el CLI ya utiliza `router.start`. La sección de routing explica su
+configuración completa.
 
 <div class="exercise">
   <h3>Chequeo rápido</h3>
-  <p>Si ves el HTML pero no responde, revisá tres cosas: el plugin de Vite, el import virtual y que el nombre de <code>view-model</code> coincida con la clase.</p>
+  <p>Si ves una pantalla de error o los bindings no responden, comprobá que el plugin esté configurado, que el módulo virtual se importe antes del montaje, que los archivos estén directamente en <code>src</code> y que el nombre de <code>view-model</code> coincida exactamente con la clase exportada.</p>
 </div>
 
 ### Video relacionado

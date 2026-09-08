@@ -32,10 +32,6 @@
   --pelela-shadow: rgba(32, 38, 43, 0.18);
   --pelela-card-border: #20262b;
   --pelela-muted-surface: #f0f1ed;
-  --pelela-demo-bg: #fff3d6;
-  --pelela-demo-text: #20262b;
-  --pelela-demo-border: #20262b;
-  --pelela-demo-shadow: #20262b;
 }
 
 :root[data-theme='dark'] {
@@ -69,10 +65,6 @@
   --pelela-shadow: rgba(0, 0, 0, 0.35);
   --pelela-card-border: #56636a;
   --pelela-muted-surface: #222a31;
-  --pelela-demo-bg: #252d35;
-  --pelela-demo-text: #f4f7f4;
-  --pelela-demo-border: #ffdb4d;
-  --pelela-demo-shadow: #080b0f;
 }
 
 body {

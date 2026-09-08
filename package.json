@@ -12,11 +12,9 @@
   "dependencies": {
     "@astrojs/mdx": "5.0.6",
     "@astrojs/starlight": "0.40.0",
-    "astro": "6.4.8",
-    "pelelajs": "1.1.0"
+    "astro": "6.4.8"
   },
   "devDependencies": {
-    "typescript": "5.9.3",
-    "vite-plugin-pelelajs": "1.1.0"
+    "typescript": "5.9.3"
   }
 }

@@ -10,6 +10,8 @@ parámetros dinámicos, consultas, rutas comodín y layouts compartidos.
 
 Este ejemplo puede copiarse en un proyecto creado con la CLI. Todos los archivos quedan
 directamente dentro de `src/`, que es donde el autorregistro de PelelaJS 1.1.0 los detecta.
+También podés organizar páginas y componentes en subdirectorios si los registrás explícitamente
+antes de llamar a `router.start`.
 
 ### `src/home.ts`
 
@@ -17,6 +19,7 @@ directamente dentro de `src/`, que es donde el autorregistro de PelelaJS 1.1.0 l
 import { router } from 'pelelajs'
 
 export class Home {
+  applicationName = ''
   title = 'Mis tareas'
 
   openTask() {
@@ -42,6 +45,7 @@ export class Home {
 import { router } from 'pelelajs'
 
 export class TaskDetail {
+  applicationName = ''
   taskId = ''
   origin = ''
 
@@ -129,7 +133,8 @@ pantalla se muestra.
 
 ## Navegación
 
-`router.navigateTo(path)` agrega una entrada al historial del navegador y renderiza la nueva ruta:
+`router.navigateTo(path)` resuelve y renderiza la ruta y, si puede hacerlo correctamente, agrega
+la nueva URL al historial del navegador:
 
 ```ts
 router.navigateTo('/tasks/42')
@@ -190,21 +195,22 @@ Si ninguna ruta coincide y no existe un fallback `*`, PelelaJS muestra su pantal
 
 ## Layouts
 
-Un layout es un componente que conserva una estructura compartida —por ejemplo, navegación y pie
-de página— mientras una ruta hija ocupa su `<outlet>`.
+Un layout define una estructura compartida —por ejemplo, navegación y pie de página— dentro de la
+cual se monta la pantalla correspondiente en el lugar del `<outlet>`.
 
 ### `src/app-layout.ts`
 
 ```ts
 export class AppLayout {
   applicationName = 'Tareas'
+  hasSession = true
 }
 ```
 
 ### `src/app-layout.pelela`
 
 ```html
-<component view-model="AppLayout">
+<pelela view-model="AppLayout">
   <header>
     <strong bind-content="applicationName"></strong>
   </header>
@@ -212,8 +218,11 @@ export class AppLayout {
   <outlet></outlet>
 
   <footer>Hecho con PelelaJS</footer>
-</component>
+</pelela>
 ```
+
+Las pantallas usadas en rutas y los layouts usan `<pelela>` como raíz. Reservá `<component>` para
+los componentes reutilizables internos.
 
 La ruta declara el layout y sus rutas hijas:
 
@@ -247,15 +256,15 @@ Los atributos del `<outlet>` se transfieren al componente de la ruta hija:
 
 ```html
 <outlet
+  if="hasSession"
   prop-application-name="applicationName"
-  link-current-user="currentUser"
-  const-density="compact"
 ></outlet>
 ```
 
 - `prop-*` envía estado del layout hacia la pantalla.
 - `link-*` sincroniza estado en ambas direcciones.
 - `const-*` envía un literal constante.
+- `if` muestra u oculta la pantalla según una propiedad, getter o ruta del ViewModel del layout.
 
 La propiedad receptora debe existir previamente en el ViewModel de la pantalla hija. Como en
 cualquier componente, el nombre kebab-case se convierte a camelCase:
@@ -271,7 +280,7 @@ En PelelaJS 1.1.0:
 - una ruta hija no puede declararse sin un layout padre;
 - una ruta con `children` no puede declarar también `component`;
 - los layouts anidados no están soportados;
-- sobre `<outlet>` solo se admiten `prop-*`, `link-*` y `const-*`.
+- sobre `<outlet>` solo se admiten `prop-*`, `link-*`, `const-*` e `if`.
 
 ## CSS al cambiar de ruta
 

@@ -6,7 +6,8 @@ description: Repetir una parte de la vista a partir de una lista reactiva.
 ## For Each
 
 `for-each` relaciona una colección del ViewModel con una plantilla repetible. Si cambia la
-colección, Pelela actualiza los elementos correspondientes de la vista.
+colección, Pelela reutiliza los elementos existentes por posición, agrega o elimina elementos
+según la longitud y vuelve a renderizar su contenido. No usa una clave del estilo `key`.
 
 ```html
 <ul>
@@ -56,6 +57,22 @@ removeItem({ itemIndex }: ItemContext) {
 }
 ```
 
+La variable del item y la variable declarada con `index` son de solo lectura dentro del contexto.
+Las propiedades anidadas del item sí pueden modificarse mediante bindings:
+
+```html
+<input for-each="item of items" bind-value="item.name" />
+```
+
+La colección también puede ser una ruta anidada:
+
+```html
+<li for-each="item of project.items" bind-content="item.name"></li>
+```
+
+Pelela falla durante el montaje si la colección no existe o no es un array. Un array vacío es
+válido.
+
 ### Caso vacío
 
 Una lista vacía no es un error: es un estado que la interfaz debe explicar.
@@ -79,7 +96,7 @@ get hasNoItems() {
 }
 ```
 
-Los atributos de Pelela aceptan propiedades, getters o rutas de propiedades, pero no expresiones
+Los bindings de lectura aceptan propiedades, getters o rutas de propiedades, pero no expresiones
 como `items.length > 0`. Las comparaciones pertenecen al ViewModel.
 
 ### Video relacionado

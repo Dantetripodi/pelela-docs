@@ -31,9 +31,10 @@ export class App {
 
 ### Qué ocurre
 
-Pelela observa el valor y actualiza la propiedad `display` del elemento cuando cambia el estado.
-Cuando el valor es falsy usa `display: none`; cuando vuelve a ser truthy restaura el `display`
-inline original. El elemento no se elimina del DOM ni se crea nuevamente.
+Pelela usa la conversión booleana de JavaScript. Cuando el valor es falsy, asigna `display: none`.
+Cuando vuelve a ser truthy, restaura el valor original de `element.style.display`. Si el elemento
+no tenía un `display` inline, restaura el valor vacío y vuelve a aplicarse el display definido por
+CSS o por el navegador. El elemento no se elimina ni se vuelve a crear.
 
 `if` no evalúa expresiones de JavaScript. Si la condición requiere una comparación, colocala en
 un getter:
@@ -51,9 +52,12 @@ get hasDescription() {
 Pensalo como una pregunta sobre el estado:
 
 ```text
-showDetails === true  → el bloque se muestra
-showDetails === false → el bloque queda oculto con display: none
+valor truthy → se muestra
+valor falsy  → se oculta
 ```
+
+Por ejemplo, `''`, `0`, `null`, `undefined` y `false` ocultan el elemento. Un array vacío es truthy
+y lo muestra.
 
 ### Buenas prácticas
 

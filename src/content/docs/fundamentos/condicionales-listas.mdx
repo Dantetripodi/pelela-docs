@@ -15,8 +15,8 @@ expresar esas variantes desde el template.
 <p if="errorMessage" bind-content="errorMessage"></p>
 ```
 
-La condición debe ser una propiedad o expresión que puedas explicar en una frase. Evitá meter
-lógica compleja directamente en el HTML.
+La condición debe ser una propiedad, un getter o una ruta de propiedades cuyo valor pueda
+interpretarse como verdadero o falso. La lógica de la condición pertenece al ViewModel, no al HTML.
 
 ## Repetir elementos
 
@@ -47,8 +47,16 @@ La sintaxis de la iteración es siempre `item of collection`. Pelela no evalúa 
 operadores dentro de los atributos: para condiciones como “la lista está vacía”, definí un getter
 en el ViewModel y usalo mediante `if="hasNoTasks"`.
 
-Cuando una lista no aparece, comprobá que la colección exista, que sea un array y que el nombre
-del item sea el mismo dentro del bloque.
+La colección también puede ser una ruta anidada:
+
+```html
+<li for-each="task of project.tasks">
+  <span bind-content="task.title"></span>
+</li>
+```
+
+Si la propiedad no existe o su valor no es un array, Pelela muestra un error durante el montaje.
+Una colección vacía, en cambio, es válida y no genera elementos.
 
 <div class="exercise"><h3>Ejercicio</h3><p>Armá una lista de tareas con estado vacío y una cantidad de elementos visible.</p></div>
 

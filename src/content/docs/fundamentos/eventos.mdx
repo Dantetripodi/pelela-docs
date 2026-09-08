@@ -55,8 +55,9 @@ save(_viewModel: App, event: Event) {
 }
 ```
 
-Esto es especialmente útil dentro de un `for-each`: el contexto incluye el elemento actual y el
-índice declarado por la iteración.
+Dentro de un `for-each`, `this` y el primer argumento representan un contexto extendido: contienen
+el item y el índice declarado por la iteración, y también permiten acceder al estado y los métodos
+del ViewModel padre.
 
 ```html title="app.pelela"
 <li for-each="task of tasks" index="taskIndex">
@@ -87,6 +88,8 @@ mostraría un error al ejecutar el evento.
 Para formularios, la idea es la misma: el input mantiene el dato y `click` o `enter` dispara la
 acción. Pelela no evita por sí solo el comportamiento nativo del navegador; si lo necesitás, usá
 el segundo argumento del handler y llamá a `event.preventDefault()`.
+
+Los handlers pueden ser `async`. Si la promesa es rechazada, Pelela muestra su página de error.
 
 ## Una secuencia para depurar
 

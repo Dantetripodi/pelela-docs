@@ -123,9 +123,10 @@ export class Tasks {
 <p if="isEmpty">Todavía no hay tareas.</p>
 ```
 
-Los getters enlazados se vuelven a evaluar cuando cambia estado reactivo. No guardes en otra
-propiedad un dato que puede derivarse de forma clara, salvo que tengas una razón explícita para
-controlar cuándo se calcula.
+Los bindings conectados a getters se vuelven a evaluar cuando cambia el estado reactivo. PelelaJS
+no rastrea individualmente qué propiedades internas leyó cada getter. No guardes en otra propiedad
+un dato que puede derivarse de forma clara, salvo que tengas una razón explícita para controlar
+cuándo se calcula.
 
 ## `initialize()`
 
@@ -184,7 +185,8 @@ inicial y luego se reflejan las asignaciones, incluso las realizadas después de
 :::caution
 PelelaJS 1.1.0 invoca `initialize()` pero no espera ni captura automáticamente una promesa
 rechazada. En inicializaciones async, manejá los errores con `try/catch` y representalos como
-estado de la pantalla.
+estado de la pantalla. En cambio, las promesas rechazadas por handlers `click` y `enter` sí se
+capturan y muestran mediante la pantalla de error.
 :::
 
 ## Componentes y rutas
@@ -195,6 +197,8 @@ componentes hijos y a los componentes montados por el router. Ocultar un element
 `initialize()` otra vez.
 
 Al navegar, el router reemplaza la pantalla y monta una nueva instancia del componente de destino.
+Cuando la ruta utiliza un layout, el layout también forma parte del nuevo montaje; no asumas que su
+instancia permanece viva entre navegaciones.
 
 ## Límites de la reactividad
 

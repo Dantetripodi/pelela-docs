@@ -3,8 +3,9 @@ title: Referencia de bindings y eventos
 description: Contrato completo de bindings, directivas estructurales y eventos de PelelaJS 1.1.0.
 ---
 
-Esta página describe la sintaxis y el comportamiento de PelelaJS 1.1.0. Los valores de los
-atributos son nombres de propiedades, paths o nombres de métodos: **no son expresiones JavaScript**.
+Esta página describe la sintaxis y el comportamiento de PelelaJS 1.1.0. Según el atributo, su valor
+puede ser una propiedad o path, el nombre de un método o, en el caso de `for-each`, una declaración
+`item of collection`. Los atributos no evalúan expresiones JavaScript.
 
 ```html
 <!-- Correcto -->
@@ -35,6 +36,9 @@ atributos son nombres de propiedades, paths o nombres de métodos: **no son expr
 
 “Elementos del componente” excluye el interior de componentes hijos: cada componente enlaza su
 propio template y su propio ViewModel.
+
+`if` también puede aplicarse a la invocación de un componente. En un layout, `<outlet>` admite
+`if` además de `prop-*`, `link-*` y `const-*`; la condición se evalúa con el ViewModel del layout.
 
 ## Propiedades y paths anidados
 
@@ -81,6 +85,8 @@ export class Message {
 ## `bind-value`
 
 Mantiene sincronizada una propiedad con un `input`, `textarea` o `select`.
+Los getters pueden utilizarse en bindings de lectura. `bind-value` necesita una propiedad
+escribible, porque intenta actualizarla cuando cambia el control.
 
 ```ts
 export class Form {
@@ -102,7 +108,8 @@ La conversión depende del valor que tenga la propiedad en el momento de editar:
 
 - si es `number`, PelelaJS interpreta separadores decimales y de miles según el locale activo;
   un valor no numérico termina como `0`;
-- si es un objeto no nulo, intenta deserializar el texto y, si no puede, guarda el string ingresado;
+- si es un objeto no nulo, intenta deserializar el texto mediante `devalue` y, si no puede, guarda
+  el string ingresado;
 - en los demás casos guarda un string;
 - al renderizar, `null` y `undefined` se muestran como valor vacío.
 
@@ -251,8 +258,9 @@ export class Tasks {
 <section if="hasTasks">...</section>
 ```
 
-`if` cambia `element.style.display` entre `none` y el display inline original. El elemento no se
-quita del DOM ni se vuelve a crear; un componente oculto puede haber sido inicializado igualmente.
+`if` cambia `element.style.display` entre `none` y el valor inline original de
+`element.style.display`. El elemento no se quita del DOM ni se vuelve a crear. El componente se
+inicializa aunque el valor inicial de `if` sea falsy, porque `if` solamente modifica su `display`.
 
 ## `for-each`
 
@@ -330,7 +338,7 @@ En un `for-each`, el primer argumento es el ViewModel contextual extendido con e
 como muestra `removeTask` en la sección anterior. `this` permite acceder al mismo contexto.
 
 Los handlers pueden ser `async`. Si un handler lanza un error o devuelve una promesa rechazada,
-PelelaJS reemplaza el contenido por su pantalla de error.
+PelelaJS renderiza su pantalla de error sobre `document.body`.
 
 PelelaJS no llama automáticamente a `preventDefault()` ni a `stopPropagation()`. Hacelo en el
 handler cuando el comportamiento del elemento lo requiera:

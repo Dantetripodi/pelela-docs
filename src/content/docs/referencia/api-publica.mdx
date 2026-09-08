@@ -160,9 +160,15 @@ defineComponent(
 El nombre se convierte a kebab-case para usarlo como tag: `TaskCard` produce `<task-card>`. El
 template y la clase deben cumplir el mismo contrato que los componentes autorregistrados.
 
+Cuando el template se monta como página, el nombre registrado en `defineComponent` debe coincidir
+con el valor de `view-model`. El nombre real del constructor no se valida: por claridad conviene
+usar el mismo nombre, aunque técnicamente podría registrarse otra clase, por ejemplo
+`defineComponent('TaskCard', CardViewModel, template)`.
+
 El registro manual es útil cuando el archivo no participa del autorregistro, cuando el template se
-obtiene de otra fuente o en infraestructura de pruebas. Para el caso normal, preferí los archivos
-`.ts`, `.pelela` y `.css` con el mismo basename.
+obtiene de otra fuente o en infraestructura de pruebas. El autorregistro detecta pares `.ts` y
+`.pelela` con el mismo basename ubicados directamente dentro de `src`. Los archivos organizados en
+subdirectorios como `pages/` o `components/` deben registrarse explícitamente.
 
 ## `router` y `RouteDefinition`
 
@@ -188,8 +194,10 @@ router.urlParameters()
 router.searchParameters()
 ```
 
-`router.start` requiere que todos los componentes y layouts ya estén registrados. Consultá
-[Routing](../../routing/) para la referencia de matching, parámetros, layouts, CSS y despliegue SPA.
+Antes de llamar a `router.start`, deben estar registradas todas las páginas y layouts referenciados
+por las rutas. Los componentes utilizados dentro de sus templates también deben registrarse antes
+de que esos templates sean montados. Consultá [Routing](../../routing/) para la referencia de
+matching, parámetros, layouts, CSS y despliegue SPA.
 
 El objeto `router` también expone `registerCss(cssPath)`. PelelaJS lo utiliza para contabilizar CSS
 administrado por una ruta; no es necesario llamarlo desde código de aplicación.
@@ -229,8 +237,8 @@ política explícita de estabilidad para esos helpers, evitá basar código de u
 
 - Los atributos de template aceptan nombres y paths, no JavaScript ni interpolación.
 - Los únicos eventos declarativos son `click` y `enter`.
-- No hay eventos personalizados emitidos por componentes; la comunicación usa `prop-*`, `link-*`
-  y `const-*`.
+- PelelaJS no ofrece una API para emitir eventos personalizados. La comunicación entre componentes
+  utiliza `prop-*`, `link-*` y `const-*`.
 - No hay slots ni proyección de contenido.
 - `if` oculta mediante `display: none`; no monta ni desmonta.
 - `for-each` requiere arrays y no soporta loops anidados.

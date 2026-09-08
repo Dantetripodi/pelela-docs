@@ -23,9 +23,73 @@ decrement() {
 }
 ```
 
-Para formularios, la idea es la misma: el input mantiene el dato y un evento dispara la acción.
-Separá la validación o transformación en métodos chicos para que el ViewModel siga siendo
-legible.
+El atributo contiene únicamente el nombre exacto del método. No agregues paréntesis ni argumentos:
+
+```html
+<!-- Correcto -->
+<button click="increment">+</button>
+
+<!-- Incorrecto -->
+<button click="increment()">+</button>
+```
+
+Pelela soporta dos eventos declarativos:
+
+- `click`, sobre elementos HTML;
+- `enter`, únicamente sobre elementos `input`.
+
+```html
+<input bind-value="name" enter="save" />
+<button click="save">Guardar</button>
+```
+
+### Acceder al contexto y al evento
+
+Pelela invoca el método con el ViewModel contextual como primer argumento y el evento nativo como
+segundo argumento. Además, dentro de un método, `this` apunta al mismo ViewModel.
+
+```ts
+save(_viewModel: App, event: Event) {
+  event.preventDefault()
+  this.savedName = this.name
+}
+```
+
+Dentro de un `for-each`, `this` y el primer argumento representan un contexto extendido: contienen
+el item y el índice declarado por la iteración, y también permiten acceder al estado y los métodos
+del ViewModel padre.
+
+```html title="app.pelela"
+<li for-each="task of tasks" index="taskIndex">
+  <button click="removeTask">
+    Eliminar <span bind-content="task.title"></span>
+  </button>
+</li>
+```
+
+```ts title="app.ts"
+type Task = {
+  title: string
+}
+
+type TaskContext = {
+  task: Task
+  taskIndex: number
+}
+
+removeTask({ taskIndex }: TaskContext) {
+  this.tasks.splice(taskIndex, 1)
+}
+```
+
+No escribas `click="removeTask(task)"`: Pelela buscaría literalmente un método con ese nombre y
+mostraría un error al ejecutar el evento.
+
+Para formularios, la idea es la misma: el input mantiene el dato y `click` o `enter` dispara la
+acción. Pelela no evita por sí solo el comportamiento nativo del navegador; si lo necesitás, usá
+el segundo argumento del handler y llamá a `event.preventDefault()`.
+
+Los handlers pueden ser `async`. Si la promesa es rechazada, Pelela muestra su página de error.
 
 ## Una secuencia para depurar
 

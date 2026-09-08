@@ -6,7 +6,8 @@ description: Repetir una parte de la vista a partir de una lista reactiva.
 ## For Each
 
 `for-each` relaciona una colección del ViewModel con una plantilla repetible. Si cambia la
-colección, Pelela actualiza los elementos correspondientes de la vista.
+colección, Pelela reutiliza los elementos existentes por posición, agrega o elimina elementos
+según la longitud y vuelve a renderizar su contenido. No usa una clave del estilo `key`.
 
 ```html
 <ul>
@@ -28,29 +29,75 @@ export class App {
 ### Contexto de cada elemento
 
 Dentro del bloque, `item` representa el elemento actual. El contexto de la iteración también
-puede acceder al ViewModel padre, por lo que una acción puede invocar métodos de la aplicación.
+puede acceder al ViewModel padre, por lo que una acción puede invocar sus métodos. Si necesitás la
+posición, declarala con el atributo `index`.
 
 ```html
-<button for-each="item of items" click="removeItem(item)">
+<button for-each="item of items" index="itemIndex" click="removeItem">
   <span bind-content="item.name"></span>
 </button>
 ```
 
-La sintaxis exacta de una acción depende de la versión del framework y de cómo esté armado el
-ViewModel; conviene mantener la lógica de modificación en métodos de la clase.
+El atributo `click` recibe solo el nombre del método. Pelela entrega el contexto de la iteración
+como primer argumento, por lo que el método puede acceder a `item` e `itemIndex` sin escribir una
+llamada dentro del HTML.
+
+```ts
+type Item = {
+  name: string
+}
+
+type ItemContext = {
+  item: Item
+  itemIndex: number
+}
+
+removeItem({ itemIndex }: ItemContext) {
+  this.items.splice(itemIndex, 1)
+}
+```
+
+La variable del item y la variable declarada con `index` son de solo lectura dentro del contexto.
+Las propiedades anidadas del item sí pueden modificarse mediante bindings:
+
+```html
+<input for-each="item of items" bind-value="item.name" />
+```
+
+La colección también puede ser una ruta anidada:
+
+```html
+<li for-each="item of project.items" bind-content="item.name"></li>
+```
+
+Pelela falla durante el montaje si la colección no existe o no es un array. Un array vacío es
+válido.
 
 ### Caso vacío
 
 Una lista vacía no es un error: es un estado que la interfaz debe explicar.
 
 ```html
-<p if="items.length === 0">Todavía no hay elementos.</p>
-<ul if="items.length > 0">
+<p if="hasNoItems">Todavía no hay elementos.</p>
+<ul if="hasItems">
   <li for-each="item of items">
     <span bind-content="item.name"></span>
   </li>
 </ul>
 ```
+
+```ts
+get hasItems() {
+  return this.items.length > 0
+}
+
+get hasNoItems() {
+  return this.items.length === 0
+}
+```
+
+Los bindings de lectura aceptan propiedades, getters o rutas de propiedades, pero no expresiones
+como `items.length > 0`. Las comparaciones pertenecen al ViewModel.
 
 ### Video relacionado
 

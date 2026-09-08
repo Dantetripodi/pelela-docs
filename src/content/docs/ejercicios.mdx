@@ -1,24 +1,23 @@
 ---
 title: Ejercicios
-description: Una secuencia progresiva para practicar PelelaJS.
+description: Un ejercicio interactivo para practicar estado y eventos en PelelaJS.
 ---
 
 import InteractiveExercise from '../../components/InteractiveExercise.astro'
 
-## Ejercicios
+## Ejercicio disponible
 
-Resolvelos en orden. Cada uno agrega una idea sin esconder el funcionamiento anterior.
+Actualmente esta página incluye un único ejercicio interactivo: completar los métodos de un
+contador. Conversor, To-do e Integrador todavía no poseen una actividad ejecutable en este sitio,
+por lo que no se presentan como ejercicios disponibles.
 
 <div class="doc-grid">
   <div class="doc-card"><h3>01 · Contador</h3><p>Estado numérico, dos eventos y binding de contenido.</p></div>
-  <div class="doc-card"><h3>02 · Conversor</h3><p>Dos inputs, valores derivados y validación.</p></div>
-  <div class="doc-card"><h3>03 · To-do</h3><p>Lista, alta, toggle, filtro y estado vacío.</p></div>
-  <div class="doc-card"><h3>04 · Integrador</h3><p>Componentes, routing y una interfaz completa.</p></div>
 </div>
 
-## Criterio de entrega
+## Qué practicar
 
-Para cada ejercicio explicá:
+Además de completar el código, intentá explicar:
 
 - cuál es el estado mínimo;
 - qué eventos lo modifican;
@@ -30,7 +29,7 @@ eventos.
 
 <InteractiveExercise
   title="01 · Completar un contador"
-  description="Completá los dos métodos del ViewModel. Cuando la solución sea correcta, se habilita la vista previa para probar los eventos."
+  description="Completá los dos métodos del ViewModel. Una comprobación textual busca las dos operaciones esperadas y, si las encuentra, habilita una simulación independiente del contador."
   initialCode={`export class App {
   counter = 0
 
@@ -56,6 +55,8 @@ eventos.
  />
 
 <div class="exercise">
-  <h3>Cómo se valida</h3>
-  <p>El ejercicio busca que cada evento modifique el estado con la operación correcta. No ejecutamos código arbitrario en el navegador: la preview usa un runner controlado y seguro.</p>
+  <h3>Qué comprueba esta actividad</h3>
+  <p>El código escrito en el editor no se compila ni se ejecuta. El sitio busca mediante expresiones regulares los patrones exactos <code>this.counter++</code> dentro de <code>increment</code> y <code>this.counter--</code> dentro de <code>decrement</code>.</p>
+  <p>Encontrar esos textos solamente habilita una preview hardcodeada que mantiene su propio contador. No demuestra que el programa sea correcto: una solución equivalente como <code>this.counter += 1</code> no supera el control, mientras que los patrones escritos dentro de comentarios podrían producir un falso positivo.</p>
+  <p>Usá la actividad como ayuda guiada para esta solución concreta. Para verificar otra implementación, ejecutala en un proyecto PelelaJS y probá su comportamiento real.</p>
 </div>

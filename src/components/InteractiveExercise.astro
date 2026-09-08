@@ -9,7 +9,7 @@ const {
 
 <section class="exercise-lab" data-exercise data-initial-code={initialCode} data-solution-code={solutionCode}>
   <div class="exercise-lab__intro">
-    <p class="exercise-lab__eyebrow">Laboratorio PelelaJS</p>
+    <p class="exercise-lab__eyebrow">Actividad guiada</p>
     <h2>{title}</h2>
     <p>{description}</p>
   </div>
@@ -17,17 +17,17 @@ const {
   <div class="exercise-lab__workspace">
     <div class="exercise-lab__editor-panel">
       <div class="exercise-lab__panel-heading">
-        <span>Completá el código</span>
+        <span>Completá el ejemplo</span>
         <span class="exercise-lab__file">app.ts</span>
       </div>
       <textarea class="exercise-editor" spellcheck="false" aria-label={`Código del ejercicio ${title}`}>{initialCode}</textarea>
       <div class="exercise-actions">
-        <button class="exercise-button primary" type="button" data-action="run">Probar solución</button>
+        <button class="exercise-button primary" type="button" data-action="run">Comprobar texto</button>
         <button class="exercise-button" type="button" data-action="hint">Ver pista</button>
         <button class="exercise-button" type="button" data-action="reset">Restaurar</button>
         <button class="exercise-button" type="button" data-action="solution">Ver solución</button>
       </div>
-      <p class="exercise-feedback" role="status" aria-live="polite" data-feedback>Completá los métodos y probá tu solución.</p>
+      <p class="exercise-feedback" role="status" aria-live="polite" data-feedback>Completá los métodos y comprobá si aparecen los dos patrones esperados.</p>
       <p class="exercise-hint" hidden data-hint>La operación de sumar usa <code>this.counter++</code>; la de restar usa <code>this.counter--</code>.</p>
       <pre class="exercise-solution" hidden data-solution><code>{solutionCode}</code></pre>
     </div>
@@ -45,7 +45,7 @@ const {
           <button class="preview-button" type="button" data-preview="increment" disabled aria-label="Sumar">+</button>
         </div>
       </div>
-      <p class="exercise-preview__note">La preview se habilita cuando la solución contiene los dos eventos esperados.</p>
+      <p class="exercise-preview__note">Esta preview no ejecuta el código del editor: es una simulación independiente.</p>
     </div>
   </div>
 </section>
@@ -95,11 +95,11 @@ const {
         counter = 0
         renderCounter()
         setPreviewEnabled(true)
-        setFeedback('¡Bien! Encontramos los dos eventos. Ahora probá la preview.', 'success')
+        setFeedback('Encontramos los dos patrones esperados. Ya podés usar la simulación.', 'success')
       } else {
         setPreviewEnabled(false)
         const missing = !hasIncrement && !hasDecrement ? 'increment y decrement' : !hasIncrement ? 'increment' : 'decrement'
-        setFeedback(`Todavía falta completar: ${missing}.`, 'error')
+        setFeedback(`Todavía no encontramos el patrón de: ${missing}.`, 'error')
       }
     })
 
@@ -114,7 +114,7 @@ const {
       counter = 0
       renderCounter()
       setPreviewEnabled(false)
-      setFeedback('Código restaurado. Completá los métodos y probá tu solución.')
+      setFeedback('Código restaurado. Completá los métodos y comprobá los patrones.')
     })
 
     root.querySelector<HTMLButtonElement>('[data-action="solution"]')?.addEventListener('click', () => {

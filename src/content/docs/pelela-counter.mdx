@@ -12,13 +12,20 @@ Probá los botones y después relacioná cada parte con el código.
 
 <PelelaCounter />
 
-## Codigo Pelela
+## Código ejecutado
+
+La demostración anterior monta exactamente este template y este ViewModel. No es una versión
+simplificada del ejemplo.
 
 ```html title="app.pelela"
 <pelela view-model="App" class="pelela-counter">
-  <button click="decrement">-</button>
-  <p bind-content="counter"></p>
-  <button click="increment">+</button>
+  <strong>Contador PelelaJS</strong>
+
+  <div class="counter-row">
+    <button click="decrement">-</button>
+    <p bind-content="counter"></p>
+    <button click="increment">+</button>
+  </div>
 </pelela>
 ```
 
@@ -26,8 +33,13 @@ Probá los botones y después relacioná cada parte con el código.
 export class App {
   counter = 0
 
-  increment() { this.counter++ }
-  decrement() { this.counter-- }
+  increment() {
+    this.counter++
+  }
+
+  decrement() {
+    this.counter--
+  }
 }
 ```
 

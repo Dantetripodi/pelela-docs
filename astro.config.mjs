@@ -49,6 +49,9 @@ export default defineConfig({
             label: 'Practicar y consultar',
             items: [
               { label: 'Ejercicios', slug: 'ejercicios' },
+              { label: 'Bindings y eventos', slug: 'referencia/bindings-eventos' },
+              { label: 'Reactividad e initialize', slug: 'referencia/reactividad-lifecycle' },
+              { label: 'API pública', slug: 'referencia/api-publica' },
               { label: 'Errores comunes', slug: 'referencia/errores-comunes' },
               { label: 'Testing', slug: 'referencia/testing' },
               { label: 'Puente hacia React', slug: 'puente-a-react' },

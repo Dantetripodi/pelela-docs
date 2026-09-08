@@ -1,0 +1,357 @@
+---
+title: Referencia de bindings y eventos
+description: Contrato completo de bindings, directivas estructurales y eventos de PelelaJS 1.1.0.
+---
+
+Esta página describe la sintaxis y el comportamiento de PelelaJS 1.1.0. Los valores de los
+atributos son nombres de propiedades, paths o nombres de métodos: **no son expresiones JavaScript**.
+
+```html
+<!-- Correcto -->
+<p bind-content="user.profile.name"></p>
+<section if="hasTasks"></section>
+<button click="save">Guardar</button>
+
+<!-- Incorrecto: no se evalúan expresiones ni llamadas -->
+<section if="tasks.length > 0"></section>
+<button click="save()">Guardar</button>
+```
+
+## Resumen
+
+| Atributo | Elementos válidos | Valor esperado | Dirección |
+| --- | --- | --- | --- |
+| `bind-content` | Elementos HTML del componente | Cualquier valor convertible a texto | ViewModel → vista |
+| `bind-value` | `input`, `textarea`, `select` | Según el tipo actual de la propiedad | Bidireccional |
+| `bind-class` | Elementos HTML del componente | `string`, `string[]` u objeto | ViewModel → vista |
+| `bind-style` | Elementos HTML del componente | Objeto de estilos | ViewModel → vista |
+| `bind-src` | Solo `img` | Convertible a `string` | ViewModel → vista |
+| `bind-alt` | Solo `img` | Convertible a `string` | ViewModel → vista |
+| `bind-enabled` | Controles de formulario soportados | `boolean` | ViewModel → vista |
+| `if` | Elemento HTML o invocación de componente | Valor truthy/falsy | ViewModel → vista |
+| `for-each` | Elemento que se repetirá | `Array` | ViewModel → vista |
+| `click` | Elementos HTML del componente | Nombre exacto de un método | Vista → ViewModel |
+| `enter` | Solo `input` | Nombre exacto de un método | Vista → ViewModel |
+
+“Elementos del componente” excluye el interior de componentes hijos: cada componente enlaza su
+propio template y su propio ViewModel.
+
+## Propiedades y paths anidados
+
+Los bindings aceptan una propiedad directa o un path separado por puntos:
+
+```ts
+export class Profile {
+  user = {
+    address: {
+      street: 'Av. Siempre Viva 742',
+    },
+  }
+}
+```
+
+```html
+<input bind-value="user.address.street">
+<span bind-content="user.address.street"></span>
+```
+
+El primer segmento debe existir cuando PelelaJS configura el template. Los segmentos intermedios
+también deben existir para poder escribir un valor anidado.
+
+No se admiten interpolación, operadores, acceso mediante corchetes ni llamadas a funciones. Para
+una condición o transformación, definí un getter en el ViewModel y enlazalo por nombre.
+
+## `bind-content`
+
+Asigna la propiedad a `textContent`. Por eso muestra texto y no interpreta HTML:
+
+```ts
+export class Message {
+  content = '<strong>Hola</strong>'
+}
+```
+
+```html
+<!-- Muestra literalmente: <strong>Hola</strong> -->
+<p bind-content="content"></p>
+```
+
+`null` y `undefined` producen texto vacío. El resto se convierte mediante `String(value)`.
+
+## `bind-value`
+
+Mantiene sincronizada una propiedad con un `input`, `textarea` o `select`.
+
+```ts
+export class Form {
+  name = ''
+  age = 0
+  accepted = false
+}
+```
+
+```html
+<input bind-value="name">
+<input bind-value="age" inputmode="numeric">
+<input type="checkbox" bind-value="accepted">
+```
+
+### Conversión por tipo
+
+La conversión depende del valor que tenga la propiedad en el momento de editar:
+
+- si es `number`, PelelaJS interpreta separadores decimales y de miles según el locale activo;
+  un valor no numérico termina como `0`;
+- si es un objeto no nulo, intenta deserializar el texto y, si no puede, guarda el string ingresado;
+- en los demás casos guarda un string;
+- al renderizar, `null` y `undefined` se muestran como valor vacío.
+
+Inicializá una propiedad numérica con un número si querés conservar su tipo:
+
+```ts
+quantity = 0 // el binding escribirá números
+```
+
+### Checkbox
+
+En un `input[type="checkbox"]`, la vista escribe un booleano usando `checked`. Al renderizar,
+PelelaJS aplica `Boolean(value)` a la propiedad.
+
+### Select con primitivas
+
+```ts
+export class Filters {
+  priorities = ['low', 'medium', 'high']
+  selectedPriority = 'medium'
+}
+```
+
+```html
+<select bind-value="selectedPriority">
+  <option for-each="priority of priorities" bind-content="priority"></option>
+</select>
+```
+
+Cuando las opciones provienen de `for-each`, PelelaJS conserva el valor original asociado a cada
+`option`; no se limita al texto del atributo `value`.
+
+### Select con objetos
+
+```ts
+type Course = { id: number; name: string }
+
+export class CourseSelector {
+  courses: Course[] = [
+    { id: 1, name: 'Algoritmos' },
+    { id: 2, name: 'Objetos' },
+  ]
+  selectedCourse: Course = this.courses[0]
+}
+```
+
+```html
+<select bind-value="selectedCourse">
+  <option
+    for-each="course of courses"
+    bind-content="course.name"
+  ></option>
+</select>
+```
+
+El ViewModel recibe el objeto asociado a la opción. Para reconocer la selección al renderizar,
+PelelaJS compara primero por identidad y luego, en objetos no vacíos, por igualdad superficial de
+sus propiedades.
+
+PelelaJS 1.1.0 no ofrece un tratamiento específico para grupos de radios ni para `select[multiple]`.
+
+## `bind-class`
+
+Preserva las clases estáticas del elemento y agrega clases dinámicas. Acepta tres formas:
+
+```ts
+export class Card {
+  className = 'featured'
+  classList = ['compact', 'selected']
+  classMap = { selected: true, disabled: false }
+}
+```
+
+```html
+<article class="card" bind-class="className"></article>
+<article class="card" bind-class="classList"></article>
+<article class="card" bind-class="classMap"></article>
+```
+
+En el objeto se incluyen las keys cuyos valores sean truthy. Un array ignora valores que no sean
+strings y strings vacíos. `null`, `undefined` y otros tipos no agregan clases dinámicas.
+
+## `bind-style`
+
+Recibe un objeto cuyas keys son propiedades de `HTMLElement.style`:
+
+```ts
+styles = {
+  backgroundColor: '#172554',
+  fontSize: '1.1rem',
+  opacity: 0.9,
+}
+```
+
+```html
+<section bind-style="styles">...</section>
+```
+
+Usá nombres JavaScript como `backgroundColor`, no `background-color`. Cada actualización limpia
+primero el atributo `style`, por lo que **reemplaza** estilos inline estáticos en lugar de
+combinarlos. Las entradas `null` o `undefined` se omiten. Si el valor completo es nulo, falsy o no
+es un objeto, se elimina el atributo `style`.
+
+## `bind-src` y `bind-alt`
+
+Solo son válidos sobre `img`:
+
+```html
+<img bind-src="avatar.url" bind-alt="avatar.description">
+```
+
+El valor se convierte a string. Si es `null`, `undefined` o `''`, PelelaJS elimina el atributo
+correspondiente. Usarlos sobre otro elemento produce un error.
+
+## `bind-enabled`
+
+Activa o desactiva un control mediante su propiedad `disabled`:
+
+```ts
+canSubmit = false
+```
+
+```html
+<button bind-enabled="canSubmit">Guardar</button>
+```
+
+Los elementos admitidos son `input`, `select`, `button`, `textarea`, `optgroup`, `option` y
+`fieldset`. El valor debe ser booleano: `true` habilita y `false` deshabilita. `null` o `undefined`
+deshabilitan el control; cualquier otro tipo produce un error.
+
+## `if`
+
+Muestra el elemento cuando el valor es truthy y lo oculta cuando es falsy:
+
+```ts
+export class Tasks {
+  tasks = ['Preparar clase']
+
+  get hasTasks() {
+    return this.tasks.length > 0
+  }
+}
+```
+
+```html
+<section if="hasTasks">...</section>
+```
+
+`if` cambia `element.style.display` entre `none` y el display inline original. El elemento no se
+quita del DOM ni se vuelve a crear; un componente oculto puede haber sido inicializado igualmente.
+
+## `for-each`
+
+La gramática es exactamente `item of collection`:
+
+```html
+<li for-each="task of tasks" index="taskIndex">
+  <span bind-content="task.title"></span>
+  <small bind-content="taskIndex"></small>
+  <button click="removeTask">Eliminar</button>
+</li>
+```
+
+La colección puede ser un path anidado, por ejemplo `group.tasks`. Debe existir y ser un array
+cuando se configura el template. `index` es opcional y su valor debe ser un identificador válido.
+
+Dentro de cada copia, el item y el índice forman parte del contexto local. Un evento accede a ese
+contexto sin escribir argumentos en el template:
+
+```ts
+type Task = { title: string }
+
+export class Tasks {
+  tasks: Task[] = [{ title: 'Preparar clase' }]
+
+  removeTask({ task }: { task: Task }) {
+    const index = this.tasks.indexOf(task)
+    if (index >= 0) this.tasks.splice(index, 1)
+  }
+}
+```
+
+Son reactivas las mutaciones `push`, `pop`, `shift`, `unshift`, `splice`, `sort` y `reverse`, la
+asignación por índice y el reemplazo completo del array. También se actualizan los bindings al
+modificar una propiedad del item, por ejemplo `this.tasks[0].title = 'Nuevo título'`.
+
+En PelelaJS 1.1.0 no se deben usar `for-each` anidados: el segundo loop dentro de una copia no se
+configura como otro bloque repetible.
+
+## Eventos: `click` y `enter`
+
+PelelaJS 1.1.0 implementa dos atributos de evento:
+
+- `click`, sobre elementos HTML del componente;
+- `enter`, únicamente sobre `input` y solo cuando `KeyboardEvent.key === 'Enter'`.
+
+El atributo contiene el nombre exacto del método, sin paréntesis ni argumentos:
+
+```html
+<button click="save">Guardar</button>
+<input bind-value="query" enter="search">
+```
+
+### Firma del handler
+
+PelelaJS invoca el handler con el ViewModel contextual como `this` y además lo pasa como primer
+argumento. El evento nativo es el segundo argumento:
+
+```ts
+export class Search {
+  query = ''
+
+  save(_viewModel: Search, event: MouseEvent) {
+    console.log(this.query)
+    console.log(event.currentTarget)
+  }
+
+  search(_viewModel: Search, event: KeyboardEvent) {
+    console.log(event.key)
+  }
+}
+```
+
+En un `for-each`, el primer argumento es el ViewModel contextual extendido con el item y el índice,
+como muestra `removeTask` en la sección anterior. `this` permite acceder al mismo contexto.
+
+Los handlers pueden ser `async`. Si un handler lanza un error o devuelve una promesa rechazada,
+PelelaJS reemplaza el contenido por su pantalla de error.
+
+PelelaJS no llama automáticamente a `preventDefault()` ni a `stopPropagation()`. Hacelo en el
+handler cuando el comportamiento del elemento lo requiera:
+
+```ts
+openMenu(_viewModel: Menu, event: MouseEvent) {
+  event.preventDefault()
+  event.stopPropagation()
+  this.isOpen = true
+}
+```
+
+## Valores nulos: resumen
+
+| Binding | Resultado con `null` o `undefined` |
+| --- | --- |
+| `bind-content` | Texto vacío |
+| `bind-value` | Valor visual vacío; checkbox desmarcado |
+| `bind-class` | Solo conserva las clases estáticas |
+| `bind-style` | Elimina el atributo `style` |
+| `bind-src`, `bind-alt` | Elimina el atributo |
+| `bind-enabled` | Deshabilita el control |
+| `if` | Oculta el elemento con `display: none` |
+| `for-each` | No es válido como valor inicial: la colección debe ser un array |

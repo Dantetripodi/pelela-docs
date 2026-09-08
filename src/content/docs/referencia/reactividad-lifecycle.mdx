@@ -1,0 +1,210 @@
+---
+title: Reactividad e initialize
+description: Cómo PelelaJS detecta cambios, actualiza bindings e inicializa ViewModels.
+---
+
+PelelaJS convierte cada instancia de ViewModel en un `Proxy` reactivo. Cuando cambia el estado,
+actualiza los bindings afectados; no vuelve a construir todo el template.
+
+## Modelo mental
+
+- **View:** el template `.pelela`; describe la estructura y sus bindings.
+- **ViewModel:** la clase TypeScript; contiene estado de presentación, getters y acciones.
+- **Modelo de dominio:** clases u objetos independientes que representan conceptos del problema,
+  cuando la aplicación los necesita.
+
+Un ViewModel no es la vista ni tiene que contener toda la lógica de negocio. Su responsabilidad es
+preparar el estado que la vista consume y responder a sus acciones.
+
+## Estado reactivo
+
+```ts
+export class Counter {
+  count = 0
+
+  increment() {
+    this.count += 1
+  }
+}
+```
+
+```html
+<pelela view-model="Counter">
+  <output bind-content="count"></output>
+  <button click="increment">Incrementar</button>
+</pelela>
+```
+
+Al asignar `count`, el Proxy notifica el path modificado. PelelaJS vuelve a evaluar los bindings
+que dependen de ese path. El resto del DOM se conserva.
+
+:::note
+“Reactivo” no significa “render completo”. PelelaJS actualiza propiedades del DOM y directivas
+concretas, como `textContent`, `value`, `className`, `style` o `display`.
+:::
+
+## Propiedades anidadas
+
+Los objetos anidados se envuelven de forma reactiva cuando se accede a ellos:
+
+```ts
+export class Profile {
+  user = {
+    name: 'Ada',
+    address: {
+      city: 'Londres',
+    },
+  }
+
+  move() {
+    this.user.address.city = 'Buenos Aires'
+  }
+}
+```
+
+```html
+<span bind-content="user.name"></span>
+<span bind-content="user.address.city"></span>
+<button click="move">Cambiar ciudad</button>
+```
+
+Cambiar `user.address.city` actualiza los bindings de ese path. Reemplazar `user.address` o
+`user` también los actualiza, porque son paths padres de la dependencia.
+
+El primer segmento de cada path debe existir cuando PelelaJS configura el template. Para escribir
+un path anidado mediante `bind-value`, también deben existir los objetos intermedios.
+
+## Arrays
+
+PelelaJS detecta estas mutaciones:
+
+```ts
+this.tasks.push(newTask)
+this.tasks.pop()
+this.tasks.shift()
+this.tasks.unshift(newTask)
+this.tasks.splice(index, 1)
+this.tasks.sort(compareTasks)
+this.tasks.reverse()
+this.tasks[0] = replacement
+this.tasks = [...this.tasks, newTask]
+```
+
+También detecta cambios dentro de un objeto del array:
+
+```ts
+this.tasks[0].completed = true
+```
+
+Estas operaciones actualizan `for-each` y los demás bindings que dependan de la colección o de sus
+paths anidados.
+
+## Getters: estado derivado
+
+Usá getters para cálculos que dependen del estado y para las condiciones que no pueden escribirse
+como expresiones en el template:
+
+```ts
+export class Tasks {
+  tasks = [] as { completed: boolean }[]
+
+  get completedCount() {
+    return this.tasks.filter((task) => task.completed).length
+  }
+
+  get isEmpty() {
+    return this.tasks.length === 0
+  }
+}
+```
+
+```html
+<p bind-content="completedCount"></p>
+<p if="isEmpty">Todavía no hay tareas.</p>
+```
+
+Los getters enlazados se vuelven a evaluar cuando cambia estado reactivo. No guardes en otra
+propiedad un dato que puede derivarse de forma clara, salvo que tengas una razón explícita para
+controlar cuándo se calcula.
+
+## `initialize()`
+
+Si el ViewModel define un método `initialize`, PelelaJS lo invoca automáticamente una vez por cada
+instancia montada.
+
+El orden es:
+
+1. PelelaJS crea la instancia del ViewModel.
+2. La envuelve con el Proxy reactivo.
+3. Configura los bindings y realiza el render inicial.
+4. Invoca `initialize()` sobre la instancia reactiva.
+
+Por eso `initialize()` puede modificar propiedades con normalidad y la vista se actualiza.
+
+### Inicialización síncrona
+
+```ts
+export class Clock {
+  currentTime = ''
+
+  initialize() {
+    this.currentTime = new Date().toLocaleTimeString()
+  }
+}
+```
+
+### Inicialización asíncrona
+
+```ts
+type Task = { id: number; title: string }
+
+export class Tasks {
+  tasks: Task[] = []
+  loading = true
+  errorMessage = ''
+
+  async initialize() {
+    try {
+      const response = await fetch('/api/tasks')
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+      this.tasks = await response.json() as Task[]
+    } catch (error) {
+      this.errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+    } finally {
+      this.loading = false
+    }
+  }
+}
+```
+
+PelelaJS no espera a que termine la promesa antes de mostrar la pantalla: primero se ve el estado
+inicial y luego se reflejan las asignaciones, incluso las realizadas después de un `await`.
+
+:::caution
+PelelaJS 1.1.0 invoca `initialize()` pero no espera ni captura automáticamente una promesa
+rechazada. En inicializaciones async, manejá los errores con `try/catch` y representalos como
+estado de la pantalla.
+:::
+
+## Componentes y rutas
+
+Cada montaje crea un ViewModel nuevo y ejecuta su `initialize()`. Esto también se aplica a
+componentes hijos y a los componentes montados por el router. Ocultar un elemento o componente con
+`if` cambia su `display`; no destruye la instancia, por lo que volver a mostrarlo no ejecuta
+`initialize()` otra vez.
+
+Al navegar, el router reemplaza la pantalla y monta una nueva instancia del componente de destino.
+
+## Límites de la reactividad
+
+- La reactividad ocurre dentro de la instancia Proxy que PelelaJS monta. Conservar y mutar por
+  fuera una referencia al objeto original puede evitar la notificación esperada.
+- Los atributos de binding aceptan paths, no expresiones JavaScript.
+- Las propiedades requeridas por un binding deben existir al configurar el template.
+- `if` cambia `display`; no implementa montaje y desmontaje condicional.
+- `for-each` requiere un array inicial y no soporta loops anidados en 1.1.0.
+- No hay un lifecycle público de desmontaje en 1.1.0.
+
+Para obtener valores derivados, preferí getters. Para efectos de inicio, carga de datos o
+preparación de estado, usá `initialize()`.

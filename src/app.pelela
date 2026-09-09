@@ -1,9 +1,0 @@
-<pelela view-model="App" class="pelela-counter">
-  <strong>Contador PelelaJS</strong>
-
-  <div class="counter-row">
-    <button click="decrement">-</button>
-    <p bind-content="counter"></p>
-    <button click="increment">+</button>
-  </div>
-</pelela>

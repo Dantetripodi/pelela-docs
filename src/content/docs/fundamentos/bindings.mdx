@@ -16,15 +16,33 @@ modificarlo a mano, declarás qué propiedad lo alimenta.
 
 `estado → binding → elemento`
 
-Si cambia `name`, el elemento que usa `bind-content="name"` se actualiza solo. Esa relación es
-la base para construir interfaces reactivas.
-
 ```html title="app.pelela"
 <input bind-value="name" placeholder="Tu nombre" />
-<p>Hola, <span bind-content="name"></span></p>
+<p bind-content="greeting"></p>
 ```
 
-Usá getters para valores derivados:
+`bind-value` es bidireccional: actualiza el elemento cuando cambia el ViewModel y actualiza el
+ViewModel cuando el usuario escribe o selecciona un valor.
+
+## Qué puede contener un binding
+
+Los bindings que leen estado reciben el nombre de una propiedad, un getter o una ruta de
+propiedades del ViewModel. `bind-value` requiere una propiedad escribible porque también actualiza
+el ViewModel desde el elemento. Los eventos y `for-each` tienen su propia sintaxis.
+
+```html title="app.pelela"
+<!-- Válidos -->
+<span bind-content="name"></span>
+<span bind-content="user.address.city"></span>
+<section if="hasResults"></section>
+
+<!-- Inválido: los operadores no se evalúan dentro del template -->
+<section if="results.length > 0"></section>
+```
+
+Cuando necesitás una condición o un valor calculado, expresalo con un getter y enlazá ese getter
+desde el template. Pelela detecta los bindings conectados a getters y vuelve a evaluarlos cuando
+cambia el estado:
 
 ```ts title="app.ts"
 export class App {
@@ -34,10 +52,6 @@ export class App {
     return this.name ? `Hola, ${this.name}` : 'Escribí tu nombre'
   }
 }
-```
-
-```html title="app.pelela"
-<p bind-content="greeting"></p>
 ```
 
 <div class="exercise"><h3>Ejercicio</h3><p>Agregá un binding que muestre la cantidad de caracteres escritos en un input.</p></div>

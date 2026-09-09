@@ -170,6 +170,62 @@ obtiene de otra fuente o en infraestructura de pruebas. El autorregistro detecta
 `.pelela` con el mismo basename ubicados directamente dentro de `src`. Los archivos organizados en
 subdirectorios como `pages/` o `components/` deben registrarse explícitamente.
 
+### Componentes dentro de subdirectorios
+
+En PelelaJS 1.1.0, el autorregistro no recorre subdirectorios. El comando de la CLI puede crear los
+archivos fuera de la raíz de `src` (por ejemplo, dentro de `src/components/`), pero esos componentes
+deben registrarse manualmente antes de montar el template o iniciar el router:
+
+```bash
+pelela new components/Counter --component
+```
+
+El resultado puede organizarse así:
+
+```text
+src/
+├── components/
+│   ├── counter.ts
+│   ├── counter.pelela
+│   └── counter.css
+└── registry.ts
+main.ts
+```
+
+Centralizá el registro en `src/registry.ts`:
+
+```ts title="src/registry.ts"
+import { defineComponent } from 'pelelajs'
+import { Counter } from './components/counter'
+import counterTemplate from './components/counter.pelela'
+import './components/counter.css'
+
+defineComponent('Counter', Counter, counterTemplate)
+```
+
+Después importá ese archivo desde el punto de entrada, antes de montar la aplicación:
+
+```ts title="main.ts"
+import './src/registry'
+import { router } from 'pelelajs'
+import { routes } from './src/routes'
+
+const root = document.getElementById('app') ?? document.body
+
+router.start(root, routes)
+```
+
+Una vez registrado, el componente se usa normalmente desde cualquier template:
+
+```html
+<counter></counter>
+```
+
+Podés conservar `virtual:pelela-auto-register` para los pares que sigan directamente dentro de
+`src`, pero no registres manual y automáticamente la misma clase. Esta necesidad de registro
+explícito corresponde a la versión 1.1.0; se está evaluando una solución para que futuras versiones
+puedan descubrir componentes dentro de subdirectorios automáticamente.
+
 ## `router` y `RouteDefinition`
 
 Una ruta representa una pantalla o un layout con hijas:

@@ -216,9 +216,12 @@ detectado automáticamente debe cumplir todas estas condiciones:
 5. El CSS es opcional. Si existe, debe compartir el mismo nombre base y estar junto al par, por
    ejemplo `app.css`.
 
-Por el momento, no coloques pares que dependan del autorregistro dentro de `src/components/` u
-otro subdirectorio: el plugin no los encontrará. Una estructura con subdirectorios requiere
-registrar esos componentes manualmente.
+Por el momento, los pares que dependan del autorregistro deben estar directamente dentro de `src`:
+el plugin no los encontrará en un subdirectorio (por ejemplo, `src/components/`). Una estructura
+con subdirectorios requiere registrar esos componentes manualmente. La sección
+[`defineComponent()`](../../referencia/api-publica/#definecomponent) muestra la estructura y el
+registro necesarios cuando un componente no está directamente dentro de `src` (por ejemplo,
+cuando está en `src/components/`).
 
 ## `mountTemplate` o `router.start`
 

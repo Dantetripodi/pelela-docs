@@ -51,7 +51,8 @@ El proyecto generado ya incluye:
 - una pantalla de ejemplo;
 - un archivo de rutas y el inicio del router.
 
-La estructura resultante contiene los archivos de integración necesarios:
+La estructura inicial contiene los archivos de integración necesarios. La carpeta `components/`
+es una posibilidad de organización para más adelante; `init` no la crea automáticamente:
 
 ```text
 mi-app/
@@ -64,13 +65,27 @@ mi-app/
 ├── package.json
 ├── styles.css              # estilos globales importados por main.ts
 └── src/
-    ├── components/         # componentes reutilizables
-    ├── app.pelela          # template
-    ├── app.ts              # ViewModel
-    └── app.css             # CSS asociado automáticamente a App
+    ├── components/         # opcional; requiere registro explícito
+    ├── base.pelela         # template inicial
+    ├── base.ts             # ViewModel inicial
+    └── base.css            # CSS asociado automáticamente a Base
 ```
 
 No necesitás crear ni configurar esos archivos a mano cuando usás el CLI.
+
+Desde ese momento, usá también el CLI para generar juntas las piezas de cada pantalla o
+componente:
+
+```bash
+# Pantalla o layout con raíz <pelela>
+pelela new Home
+
+# Componente reutilizable con raíz <component>
+pelela new -c TaskCard
+```
+
+Continuá en [Pelela CLI](../pelela-cli/) para conocer las opciones, las convenciones de nombres y
+el comando de renombrado.
 
 ## Agregar PelelaJS a un proyecto existente
 
@@ -203,8 +218,8 @@ el autorregistro e inicia el router.
 
 ## Contrato del autorregistro
 
-El autorregistro actual no recorre subdirectorios. Para que una pantalla o componente sea
-detectado automáticamente debe cumplir todas estas condiciones:
+El autorregistro de `vite-plugin-pelelajs` 1.1.0 no recorre subdirectorios. Para que una pantalla o
+componente sea detectado automáticamente debe cumplir todas estas condiciones:
 
 1. Los archivos `.ts` y `.pelela` deben estar directamente dentro de `src`.
 2. Ambos archivos deben compartir exactamente el mismo nombre base, por ejemplo `app.ts` y
@@ -218,12 +233,14 @@ detectado automáticamente debe cumplir todas estas condiciones:
 
 Por el momento, no coloques pares que dependan del autorregistro dentro de `src/components/` u
 otro subdirectorio: el plugin no los encontrará. Una estructura con subdirectorios requiere
-registrar esos componentes manualmente.
+registrar esos componentes manualmente. La guía de
+[Pelela CLI](../pelela-cli/#registrar-elementos-de-subdirectorios) muestra un ejemplo completo con
+`defineComponent()`.
 
 ## `mountTemplate` o `router.start`
 
-Usá `mountTemplate(root, template)` cuando la aplicación tenga una única pantalla o cuando estés
-aprendiendo los fundamentos sin navegación.
+Usá `mountTemplate(root, template)` cuando quieras montar directamente un template, sin delegar
+el montaje al router.
 
 Usá `router.start(root, routes)` cuando la aplicación tenga varias rutas. En ese caso:
 

@@ -8,8 +8,21 @@ parámetros dinámicos, consultas, rutas comodín y layouts compartidos.
 
 ## Ejemplo mínimo completo
 
-Este ejemplo puede copiarse en un proyecto creado con la CLI. Todos los archivos quedan
-directamente dentro de `src/`, que es donde el autorregistro de PelelaJS 1.1.0 los detecta.
+Partiendo de un proyecto creado con Pelela CLI, convertí la pantalla inicial en `Home` y generá las
+otras dos pantallas. `new` crea por defecto un template con raíz `<pelela>`, que es la adecuada
+para una ruta:
+
+```bash
+pelela rename Base Home
+pelela new TaskDetail
+pelela new NotFound
+```
+
+El CLI crea los archivos, pero no modifica `routes.ts`: esa relación se declara expresamente en
+el arreglo de rutas que aparece más adelante.
+
+Todos los archivos de este ejemplo quedan directamente dentro de `src/`, que es donde el
+autorregistro de PelelaJS 1.1.0 los detecta.
 También podés organizar páginas y componentes en subdirectorios si los registrás explícitamente
 antes de llamar a `router.start`.
 
@@ -89,13 +102,13 @@ export class NotFound {}
 </pelela>
 ```
 
-### `src/routes.ts`
+### `routes.ts`
 
 ```ts
 import type { RouteDefinition } from 'pelelajs'
-import { Home } from './home'
-import { NotFound } from './not-found'
-import { TaskDetail } from './task-detail'
+import { Home } from './src/home'
+import { NotFound } from './src/not-found'
+import { TaskDetail } from './src/task-detail'
 
 export const routes: RouteDefinition[] = [
   { path: '/', component: Home },
@@ -109,8 +122,8 @@ export const routes: RouteDefinition[] = [
 ```ts
 import { router } from 'pelelajs'
 import 'virtual:pelela-auto-register'
-import { routes } from './src/routes'
-import './src/global.css'
+import { routes } from './routes'
+import './styles.css'
 
 const app = document.querySelector<HTMLElement>('#app')
 
@@ -198,6 +211,12 @@ Si ninguna ruta coincide y no existe un fallback `*`, PelelaJS muestra su pantal
 Un layout define una estructura compartida —por ejemplo, navegación y pie de página— dentro de la
 cual se monta la pantalla correspondiente en el lugar del `<outlet>`.
 
+Como un layout también necesita una raíz `<pelela>`, se genera sin la opción `-c`:
+
+```bash
+pelela new AppLayout
+```
+
 ### `src/app-layout.ts`
 
 ```ts
@@ -228,10 +247,10 @@ La ruta declara el layout y sus rutas hijas:
 
 ```ts
 import type { RouteDefinition } from 'pelelajs'
-import { AppLayout } from './app-layout'
-import { Home } from './home'
-import { NotFound } from './not-found'
-import { TaskDetail } from './task-detail'
+import { AppLayout } from './src/app-layout'
+import { Home } from './src/home'
+import { NotFound } from './src/not-found'
+import { TaskDetail } from './src/task-detail'
 
 export const routes: RouteDefinition[] = [
   {

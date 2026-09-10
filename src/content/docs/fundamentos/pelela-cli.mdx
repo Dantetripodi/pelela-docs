@@ -1,0 +1,244 @@
+---
+title: Pelela CLI
+description: Crear proyectos, pantallas y componentes de PelelaJS desde la terminal.
+---
+
+Pelela CLI es la herramienta principal para crear y mantener la estructura de una aplicación
+PelelaJS. Genera juntos el ViewModel, el template y el CSS, aplica las convenciones de nombres y
+evita errores frecuentes entre archivos relacionados.
+
+## Instalar el CLI
+
+Necesitás Node.js 22 o superior y pnpm. Instalá el paquete globalmente una sola vez:
+
+```bash
+pnpm add -g @pelelajs/cli
+```
+
+Comprobá que el comando esté disponible:
+
+```bash
+pelela --version
+pelela --help
+```
+
+Cuando necesites actualizarlo, repetí la instalación global. pnpm reemplazará la versión
+instalada por la más reciente disponible.
+
+## Crear una aplicación
+
+`init` crea un proyecto completo a partir del template oficial:
+
+```bash
+pelela init MiAplicacion
+cd miaplicacion
+pnpm install
+pnpm dev
+```
+
+El nombre del directorio y del paquete se normaliza: se convierte a minúsculas y los espacios o
+caracteres no admitidos se reemplazan por guiones. Por ejemplo, `Mi App` genera `mi-app`. Si no
+indicás un nombre, el proyecto se crea en un directorio llamado `example`.
+
+El proyecto ya queda preparado con Vite, TypeScript, PelelaJS, el plugin, el autorregistro y el
+router. No vuelvas a configurar esas piezas a mano. Ejecutá los siguientes comandos desde la raíz
+del proyecto, donde se encuentran `package.json` y la carpeta `src`.
+
+La pantalla inicial se llama `Base`. Si querés convertirla en el comienzo de tu aplicación, podés
+renombrarla sin separar sus archivos relacionados:
+
+```bash
+pelela rename Base Home
+```
+
+El CLI también actualiza el import y la referencia a la clase en `routes.ts`.
+
+## Crear una pantalla
+
+Una pantalla o layout que puede montarse directamente o utilizarse en una ruta necesita una raíz
+`<pelela>`. `new` utiliza esa raíz de manera predeterminada:
+
+```bash
+pelela new TaskDetail
+```
+
+El comando genera tres archivos relacionados:
+
+```text
+src/
+├── task-detail.ts
+├── task-detail.pelela
+└── task-detail.css
+```
+
+La clase usa PascalCase y los archivos usan kebab-case. El template generado comienza así:
+
+```html
+<pelela view-model="TaskDetail">
+  <h1>TaskDetail Component</h1>
+</pelela>
+```
+
+Para crear los archivos sin una hoja de estilo asociada, agregá `--no-css`:
+
+```bash
+pelela new TaskDetail --no-css
+```
+
+El CLI crea los archivos, pero no agrega la pantalla al arreglo de rutas. Si va a tener una URL,
+importá la clase y sumá su `RouteDefinition` en `routes.ts`.
+
+## Crear un componente reutilizable
+
+Un componente interno usa `<component>` como raíz. Indicá esa intención con `-c` o
+`--component`:
+
+```bash
+pelela new -c TaskCard
+```
+
+El resultado conserva la misma terna de archivos, pero el template comienza con
+`<component view-model="TaskCard">`. Después podés usarlo desde otro template mediante su tag en
+kebab-case:
+
+```html
+<task-card prop-task="selectedTask"></task-card>
+```
+
+También podés combinar las opciones:
+
+```bash
+pelela new -c TaskCard --no-css
+```
+
+Esta diferencia es importante:
+
+| Qué querés crear | Comando | Raíz generada |
+| --- | --- | --- |
+| Pantalla o layout | `pelela new Home` | `<pelela>` |
+| Componente reutilizable | `pelela new -c TaskCard` | `<component>` |
+
+## Nombres y directorios
+
+El último segmento del nombre debe escribirse en PascalCase. Usá, por ejemplo, `TaskCard` y no
+`task-card`. El CLI se ocupa de convertir el nombre de los archivos.
+
+Podés indicar un subdirectorio y el CLI lo crea si no existe:
+
+```bash
+pelela new pages/Home
+pelela new -c components/TaskCard
+```
+
+Sin embargo, el autorregistro de `vite-plugin-pelelajs` 1.1.0 solo descubre pares `.ts` y
+`.pelela` ubicados directamente en `src`: la
+[implementación actual del plugin](https://github.com/uqbar-project/pelelajs/blob/2ca8c2808b21d6d88b650908145b33595244b523/packages/vite-plugin-pelelajs/src/index.ts)
+lee ese directorio sin recorrer sus subdirectorios. Por eso, mientras dependas de
+`virtual:pelela-auto-register`, generá los archivos sin subdirectorios:
+
+```bash
+pelela new Home
+pelela new -c TaskCard
+```
+
+Usá `pages/` o `components/` únicamente si también vas a
+[registrar explícitamente esos elementos](#registrar-elementos-de-subdirectorios) antes de montar
+sus templates o iniciar el router.
+
+## Registrar elementos de subdirectorios
+
+Creá un módulo de registro cuando decidas organizar pantallas o componentes en carpetas. Para un
+componente generado con `pelela new -c components/TaskCard`, el registro mínimo es:
+
+```ts title="register-components.ts"
+import { defineComponent } from 'pelelajs'
+import { TaskCard } from './src/components/task-card'
+import taskCardTemplate from './src/components/task-card.pelela'
+
+const taskCardCssUrl = new URL('./src/components/task-card.css', import.meta.url).href
+
+defineComponent('TaskCard', TaskCard, taskCardTemplate, {
+  cssUrls: [taskCardCssUrl],
+})
+```
+
+Importá ese módulo desde `main.ts` antes de iniciar el router o montar un template:
+
+```ts title="main.ts"
+import './register-components'
+import { router } from 'pelelajs'
+import 'virtual:pelela-auto-register'
+import { routes } from './routes'
+
+const root = document.getElementById('app') ?? document.body
+router.start(root, routes)
+```
+
+`defineComponent()` registra en una sola operación la clase, su template y las URLs de su CSS
+asociado. El mismo mecanismo sirve para una pantalla o layout ubicado en un subdirectorio.
+
+## Renombrar
+
+Para renombrar una pantalla o componente, usá nombres de clase en PascalCase:
+
+```bash
+pelela rename TaskDetail TaskView
+```
+
+El comando:
+
+- busca el archivo TypeScript recursivamente desde `src`;
+- renombra los archivos `.ts`, `.pelela` y `.css` si existen;
+- cambia el nombre de la clase exportada;
+- actualiza el valor de `view-model`;
+- intenta actualizar los imports que usen esa clase.
+
+Si existen componentes con el mismo nombre en carpetas diferentes y pasás solamente `TaskCard`,
+el CLI renombra la primera coincidencia que encuentra. Aunque la interfaz acepta un path para
+desambiguar, la versión actual no resuelve correctamente todas las combinaciones de rutas al
+renombrar archivos anidados. Hasta que esa limitación se corrija, usá nombres únicos para los
+elementos que quieras renombrar.
+
+:::caution
+El formato previsto para desambiguar sería
+`pelela rename components/TaskCard components/TaskSummary`, pero esa combinación duplica parte de
+la ruta con la implementación actual. No la uses hasta que el CLI corrija la resolución del
+directorio de destino.
+:::
+
+La actualización de imports recorre solamente archivos `.ts` y `.js` y reconoce imports estáticos
+con el formato esperado por el CLI. No procesa `.tsx`, `.mjs`, `.cjs`, reexports ni todos los
+formatos posibles de imports multilínea. Revisá esos casos manualmente después del comando.
+
+Después del cambio, revisá los usos declarativos. El CLI no reemplaza el tag de un componente
+dentro de otros archivos `.pelela` ni cambia textos como el `path` de una ruta. Por ejemplo, si
+renombraste `TaskCard` a `TaskSummary`, reemplazá manualmente `<task-card>` por
+`<task-summary>` donde corresponda.
+
+## Referencia rápida
+
+```bash
+# Crear un proyecto
+pelela init [NombreDelProyecto]
+
+# Crear una pantalla o layout
+pelela new Nombre
+
+# Crear un componente reutilizable
+pelela new -c Nombre
+
+# Omitir el CSS asociado
+pelela new Nombre --no-css
+
+# Renombrar los archivos relacionados
+pelela rename NombreActual NombreNuevo
+
+# Consultar el CLI instalado
+pelela --version
+pelela --help
+```
+
+:::tip
+Usá el CLI para crear y renombrar la estructura. Después completá el ViewModel y el template,
+declará las rutas necesarias y ejecutá la aplicación con `pnpm dev`.
+:::

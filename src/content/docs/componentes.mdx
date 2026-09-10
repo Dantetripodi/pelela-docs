@@ -9,6 +9,16 @@ Cuando una pantalla crece, separá una parte que tenga una responsabilidad clara
 Pelela tiene su propio ViewModel. Por convención, el template de un componente reutilizable usa
 `<component>` como raíz.
 
+Creá siempre la terna inicial con Pelela CLI. La opción `-c` hace que el template tenga la raíz
+correcta para un componente reutilizable:
+
+```bash
+pelela new -c CounterSelector
+```
+
+Esto genera `counter-selector.ts`, `counter-selector.pelela` y `counter-selector.css` dentro de
+`src`. Usá `--no-css` si el componente no necesita estilos propios.
+
 Por ejemplo, estos dos archivos definen un componente llamado `CounterSelector`:
 
 ```ts title="counter-selector.ts"
@@ -70,6 +80,9 @@ y al `.pelela`, el plugin también lo asocia con el componente.
 
 Sin la importación de `virtual:pelela-auto-register`, los tags no quedan registrados. Usar un tag
 no estándar que no corresponde a un componente registrado produce un error durante el montaje.
+Si organizás los archivos en subdirectorios, consultá el
+[registro explícito con `defineComponent()`](./fundamentos/pelela-cli/#registrar-elementos-de-subdirectorios),
+porque el autorregistro de `vite-plugin-pelelajs` 1.1.0 no recorre esas carpetas.
 
 ## Comunicación entre padre e hijo
 

@@ -22,7 +22,6 @@ export default defineConfig({
           label: 'Empezar',
           items: [
             { label: 'Inicio', slug: '' },
-            { label: 'Antes de Pelela', slug: 'maquetado' },
             { label: 'Instalación', slug: 'fundamentos/instalacion' },
             { label: 'Pelela CLI', slug: 'fundamentos/pelela-cli' },
           ],

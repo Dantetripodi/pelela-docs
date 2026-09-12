@@ -135,6 +135,22 @@ body {
 .sl-markdown-content table:has(th:nth-child(4)) tr > :nth-child(3) { width: 28%; }
 .sl-markdown-content table:has(th:nth-child(4)) tr > :last-child { width: 20%; }
 
+.sl-markdown-content .api-reference-table {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.sl-markdown-content .api-reference-table table {
+  margin-block: 0;
+  table-layout: fixed;
+}
+
+.sl-markdown-content .api-reference-table tr > :first-child {
+  width: 56%;
+}
+
+.sl-markdown-content .api-reference-table tr > :last-child { width: 44%; }
+
 .sl-markdown-content .bindings-summary-table {
   max-width: 100%;
   overflow-x: auto;

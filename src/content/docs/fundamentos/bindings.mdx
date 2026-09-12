@@ -7,37 +7,45 @@ import BindingGrid from '../../../components/BindingGrid.astro'
 
 ## Bindings: conectar estado y vista
 
-Un binding es un puente entre el estado y un elemento del HTML. En vez de buscar el elemento y
-modificarlo a mano, declarás qué propiedad lo alimenta.
+Un binding es una conexión declarativa entre el estado del ViewModel y un elemento del HTML. En
+vez de buscar el elemento y modificarlo a mano, indicás qué propiedad debe utilizar PelelaJS para
+mantenerlo actualizado.
 
 <BindingGrid />
 
-## La idea en una línea
+## Dos direcciones posibles
 
-`estado → binding → elemento`
+La mayoría de los bindings llevan información en una sola dirección:
+
+`ViewModel → binding → vista`
+
+Por ejemplo, `bind-content` muestra el valor de una propiedad:
 
 ```html title="app.pelela"
-<input bind-value="name" placeholder="Tu nombre" />
 <p bind-content="greeting"></p>
 ```
 
-`bind-value` es bidireccional: actualiza el elemento cuando cambia el ViewModel y actualiza el
-ViewModel cuando el usuario escribe o selecciona un valor.
+`bind-value` es bidireccional. PelelaJS actualiza el control cuando cambia el ViewModel y también
+actualiza el ViewModel cuando la persona escribe o selecciona un valor:
 
-## Qué puede contener un binding
+`ViewModel ↔ bind-value ↔ control`
+
+```html title="app.pelela"
+<input bind-value="name" placeholder="Tu nombre" />
+```
+
+En ambos casos, **el estado continúa siendo la fuente de verdad**.
+
+## Propiedades, paths y getters
 
 Los bindings que leen estado reciben el nombre de una propiedad, un getter o una ruta de
 propiedades del ViewModel. `bind-value` requiere una propiedad escribible porque también actualiza
-el ViewModel desde el elemento. Los eventos y `for-each` tienen su propia sintaxis.
+el ViewModel desde el elemento.
 
 ```html title="app.pelela"
-<!-- Válidos -->
 <span bind-content="name"></span>
 <span bind-content="user.address.city"></span>
 <section if="hasResults"></section>
-
-<!-- Inválido: los operadores no se evalúan dentro del template -->
-<section if="results.length > 0"></section>
 ```
 
 Cuando necesitás una condición o un valor calculado, expresalo con un getter y enlazá ese getter
@@ -54,7 +62,215 @@ export class App {
 }
 ```
 
-<div class="exercise"><h3>Ejercicio</h3><p>Agregá un binding que muestre la cantidad de caracteres escritos en un input.</p></div>
+Los atributos de binding **no evalúan expresiones JavaScript**. Por ejemplo,
+`bind-content="user.name"` es válido, pero `bind-content="user.name.toUpperCase()"` no lo es.
+
+## `bind-content`: mostrar texto
+
+Asigna el valor de una propiedad al `textContent` del elemento:
+
+```ts title="message.ts"
+export class Message {
+  title = 'Bienvenido a PelelaJS'
+}
+```
+
+```html title="message.pelela"
+<pelela view-model="Message">
+  <h1 bind-content="title"></h1>
+</pelela>
+```
+
+Como utiliza `textContent`, el valor se muestra como texto y no se interpreta como HTML. Los
+valores `null` y `undefined` producen contenido vacío.
+
+## `bind-value`: editar una propiedad
+
+Mantiene sincronizada una propiedad con un `input`, `textarea` o `select`:
+
+```ts title="profile.ts"
+export class Profile {
+  name = ''
+  biography = ''
+  role = 'student'
+}
+```
+
+```html title="profile.pelela"
+<pelela view-model="Profile">
+  <input bind-value="name" />
+  <textarea bind-value="biography"></textarea>
+
+  <select bind-value="role">
+    <option value="student">Estudiante</option>
+    <option value="teacher">Docente</option>
+  </select>
+</pelela>
+```
+
+La propiedad debe existir y ser escribible. Su valor inicial también ayuda a PelelaJS a conservar
+el tipo: si comienza como `number`, el texto ingresado se convierte a número; si comienza como
+`string`, se mantiene como texto. Los checkboxes trabajan con valores booleanos.
+
+La referencia explica los casos particulares de conversión, checkboxes y selects con objetos.
+
+## `bind-class`: aplicar clases dinámicas
+
+Combina las clases estáticas del elemento con clases obtenidas desde el ViewModel. Acepta un
+`string`, un array de strings o un objeto cuyas claves sean nombres de clase:
+
+```ts title="task.ts"
+export class Task {
+  classMap = {
+    completed: true,
+    important: false,
+  }
+}
+```
+
+```html title="task.pelela"
+<article class="task" bind-class="classMap">
+  Tarea completada
+</article>
+```
+
+En este caso, el elemento conserva `task` y agrega `completed`. La clase `important` no se aplica
+porque su valor es falsy.
+
+## `bind-style`: aplicar estilos dinámicos
+
+Recibe un objeto con propiedades de `HTMLElement.style`. Los nombres deben escribirse con la forma
+utilizada por JavaScript, como `backgroundColor` o `fontSize`:
+
+```ts title="progress.ts"
+export class Progress {
+  progressStyle = {
+    width: '75%',
+    backgroundColor: '#ffdb4d',
+  }
+}
+```
+
+```html title="progress.pelela"
+<div class="progress-bar" bind-style="progressStyle"></div>
+```
+
+Cada actualización de `bind-style` reemplaza los estilos inline del elemento. Los estilos que no
+cambian deberían permanecer en una clase CSS.
+
+## `bind-src` y `bind-alt`: describir una imagen
+
+Estos bindings se utilizan únicamente sobre elementos `img`:
+
+```ts title="avatar.ts"
+export class Avatar {
+  imageUrl = '/images/profile.png'
+  description = 'Foto de perfil de Ada'
+}
+```
+
+```html title="avatar.pelela"
+<img bind-src="imageUrl" bind-alt="description" />
+```
+
+Ambos valores se convierten a texto. Si el valor es `null`, `undefined` o un string vacío,
+PelelaJS elimina el atributo correspondiente.
+
+## `bind-enabled`: habilitar un control
+
+Conecta un booleano del ViewModel con el estado habilitado de un control:
+
+```ts title="form.ts"
+export class Form {
+  name = ''
+
+  get canSubmit() {
+    return this.name.trim().length > 0
+  }
+}
+```
+
+```html title="form.pelela"
+<input bind-value="name" />
+<button bind-enabled="canSubmit">Guardar</button>
+```
+
+`true` habilita el elemento y `false` lo deshabilita. El valor debe ser booleano. Puede utilizarse
+con controles como `input`, `select`, `button`, `textarea`, `optgroup`, `option` y `fieldset`.
+
+## Qué binding elegir
+
+| Necesidad | Binding |
+| --- | --- |
+| Mostrar texto | `bind-content` |
+| Leer o modificar el valor de un control | `bind-value` |
+| Agregar clases según el estado | `bind-class` |
+| Aplicar estilos inline calculados | `bind-style` |
+| Cambiar la fuente de una imagen | `bind-src` |
+| Cambiar el texto alternativo de una imagen | `bind-alt` |
+| Habilitar o deshabilitar un control | `bind-enabled` |
+
+Para mostrar u ocultar elementos utilizá [`if`](../renderizado-condicional/). Para repetir un
+elemento a partir de una colección utilizá [`for-each`](../for-each/).
+
+## Combinar bindings
+
+Una misma vista puede utilizar varios bindings sobre el mismo estado:
+
+```ts title="profile.ts"
+export class Profile {
+  name = ''
+  avatarUrl = '/images/default-avatar.png'
+
+  get greeting() {
+    return this.name ? `Hola, ${this.name}` : 'Escribí tu nombre'
+  }
+
+  get avatarDescription() {
+    return this.name ? `Foto de perfil de ${this.name}` : 'Foto de perfil'
+  }
+
+  get cardClasses() {
+    return { completed: this.name.length > 0 }
+  }
+
+  get canSave() {
+    return this.name.trim().length > 0
+  }
+}
+```
+
+```html title="profile.pelela"
+<pelela view-model="Profile">
+  <article class="profile" bind-class="cardClasses">
+    <img bind-src="avatarUrl" bind-alt="avatarDescription" />
+    <input bind-value="name" placeholder="Tu nombre" />
+    <p bind-content="greeting"></p>
+    <button bind-enabled="canSave">Guardar</button>
+  </article>
+</pelela>
+```
+
+Al escribir un nombre, `bind-value` actualiza `name`. PelelaJS vuelve a evaluar los getters y
+actualiza el saludo, el texto alternativo, las clases y el estado del botón.
+
+## Errores frecuentes
+
+- Escribir una expresión o una llamada, como `bind-content="formatName()"`, en lugar del nombre de
+  una propiedad o getter.
+- Usar `bind-value` con un getter sin setter o con una propiedad que no existe.
+- Intentar utilizar `bind-src` o `bind-alt` sobre un elemento que no sea `img`.
+- Entregar a `bind-enabled` un valor que no sea booleano.
+- Escribir propiedades CSS con guiones dentro de `bind-style`, como `background-color`.
+- Modificar el DOM manualmente en vez de actualizar el estado del ViewModel.
+
+Consultá la [referencia de bindings y eventos](../../referencia/bindings-eventos/) para conocer el
+contrato completo, las conversiones, los valores nulos y los casos límite de cada atributo.
+
+<div class="exercise">
+  <h3>Ejercicio</h3>
+  <p>Agregá al perfil un contador que muestre la cantidad de caracteres escritos en el nombre.</p>
+</div>
 
 ### Video relacionado
 

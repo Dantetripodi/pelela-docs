@@ -1,6 +1,6 @@
 ---
 title: API pública y limitaciones
-description: Puntos de entrada de PelelaJS 1.1.0 para montaje, registro manual y routing.
+description: Puntos de entrada de PelelaJS 1.2.2 para montaje, registro manual y routing.
 ---
 
 La API que una aplicación usa normalmente se importa desde `pelelajs`:
@@ -20,6 +20,8 @@ incluye ambas opciones para dejar claro qué hace cada función.
 
 ## API recomendada para aplicaciones
 
+<div class="api-reference-table">
+
 | Export | Uso |
 | --- | --- |
 | `mountTemplate(container, template)` | Montar una pantalla sin router |
@@ -30,6 +32,8 @@ incluye ambas opciones para dejar claro qué hace cada función.
 | `RouteDefinition` | Tipar la configuración de rutas |
 | `defineViewModel(name, constructor)` | Registrar manualmente un ViewModel |
 | `defineComponent(name, constructor, template, options?)` | Registrar manualmente un componente |
+
+</div>
 
 ## `mountTemplate`
 
@@ -165,66 +169,15 @@ con el valor de `view-model`. El nombre real del constructor no se valida: por c
 usar el mismo nombre, aunque técnicamente podría registrarse otra clase, por ejemplo
 `defineComponent('TaskCard', CardViewModel, template)`.
 
-El registro manual es útil cuando el archivo no participa del autorregistro, cuando el template se
-obtiene de otra fuente o en infraestructura de pruebas. El autorregistro detecta pares `.ts` y
-`.pelela` con el mismo basename ubicados directamente dentro de `src`. Los archivos organizados en
-subdirectorios como `pages/` o `components/` deben registrarse explícitamente.
+El registro manual es útil cuando el template se obtiene de otra fuente o en infraestructura de
+pruebas. En una aplicación con el plugin, el autorregistro recorre `src` de forma recursiva y
+detecta los pares `.ts` y `.pelela` con el mismo basename, incluidos los ubicados en carpetas como
+`pages/` o `components/`. No registres manual y automáticamente la misma clase.
 
-### Componentes dentro de subdirectorios
-
-En PelelaJS 1.1.0, el autorregistro no recorre subdirectorios. El comando de la CLI puede crear los
-archivos fuera de la raíz de `src` (por ejemplo, dentro de `src/components/`), pero esos componentes
-deben registrarse manualmente antes de montar el template o iniciar el router:
-
-```bash
-pelela new components/Counter --component
-```
-
-El resultado puede organizarse así:
-
-```text
-src/
-├── components/
-│   ├── counter.ts
-│   ├── counter.pelela
-│   └── counter.css
-└── registry.ts
-main.ts
-```
-
-Centralizá el registro en `src/registry.ts`:
-
-```ts title="src/registry.ts"
-import { defineComponent } from 'pelelajs'
-import { Counter } from './components/counter'
-import counterTemplate from './components/counter.pelela'
-import './components/counter.css'
-
-defineComponent('Counter', Counter, counterTemplate)
-```
-
-Después importá ese archivo desde el punto de entrada, antes de montar la aplicación:
-
-```ts title="main.ts"
-import './src/registry'
-import { router } from 'pelelajs'
-import { routes } from './src/routes'
-
-const root = document.getElementById('app') ?? document.body
-
-router.start(root, routes)
-```
-
-Una vez registrado, el componente se usa normalmente desde cualquier template:
-
-```html
-<counter></counter>
-```
-
-Podés conservar `virtual:pelela-auto-register` para los pares que sigan directamente dentro de
-`src`, pero no registres manual y automáticamente la misma clase. Esta necesidad de registro
-explícito corresponde a la versión 1.1.0; se está evaluando una solución para que futuras versiones
-puedan descubrir componentes dentro de subdirectorios automáticamente.
+Además de encontrar el par, el plugin comprueba que `view-model` corresponda exactamente a una
+clase exportada por el archivo `.ts`. Los errores por un `export` faltante, diferencias de
+mayúsculas y minúsculas, un nombre inexistente o una función u objeto usados como ViewModel se
+muestran con un diagnóstico específico.
 
 ## `router` y `RouteDefinition`
 
@@ -260,11 +213,12 @@ administrado por una ruta; no es necesario llamarlo desde código de aplicación
 
 ## Tipos exportados
 
-PelelaJS 1.1.0 exporta estos tipos para aplicaciones e integraciones:
+PelelaJS 1.2.2 exporta estos tipos para aplicaciones e integraciones:
 
 - `RouteDefinition`;
 - `ViewModelConstructor<T>`: un constructor sin argumentos;
 - `PelelaOptions`: opciones de `bootstrap`;
+- `ViewModelExportErrorParams`: detalle de un error detectado entre un `.pelela` y su clase;
 - `BindingKind`, `EventType`, `RegistrationType` y `RoutingErrorType`: categorías usadas por los
   errores del framework.
 
@@ -274,13 +228,13 @@ propiedades, `prop-*`, `link-*`, `const-*`, parámetros de ruta o `initialize()`
 ## Errores exportados
 
 El paquete exporta `PelelaError`, `InvalidHandlerError`, `PropertyValidationError`,
-`RoutingError` y `ViewModelRegistrationError`. Pueden servir para reconocer categorías de error en
-herramientas o pruebas; durante el montaje normal, varios errores se representan mediante la
-pantalla de error del framework.
+`RoutingError`, `ViewModelExportError` y `ViewModelRegistrationError`. Pueden servir para reconocer
+categorías de error en herramientas o pruebas; durante el montaje normal, varios errores se
+representan mediante la pantalla de error del framework.
 
 ## Infraestructura también exportada
 
-El entrypoint de 1.1.0 expone además helpers y constantes usados por el compilador, el plugin o la
+El entrypoint de 1.2.2 expone además helpers y constantes usados por el compilador, el plugin o la
 infraestructura interna: `CONST_PREFIX`, `LINK_PREFIX`, `PROP_PREFIX`, `isPelelaRootTag`,
 `isStandardHtmlTag`, `isValidComponentAttribute`, `findUniqueCollapsedTag`, `initializeI18n` y
 `t`.
@@ -289,7 +243,7 @@ Que un símbolo esté exportado significa que puede importarse en esta versión;
 solo que sea una abstracción recomendada para aplicaciones. Hasta que el proyecto publique una
 política explícita de estabilidad para esos helpers, evitá basar código de usuario en ellos.
 
-## Limitaciones de PelelaJS 1.1.0
+## Limitaciones de PelelaJS 1.2.2
 
 - Los atributos de template aceptan nombres y paths, no JavaScript ni interpolación.
 - Los únicos eventos declarativos son `click` y `enter`.
@@ -304,5 +258,5 @@ política explícita de estabilidad para esos helpers, evitá basar código de u
 - El router no intercepta enlaces HTML, no tiene base path configurable y no soporta layouts
   anidados.
 
-Estas limitaciones describen la versión 1.1.0 y permiten diseñar aplicaciones sin depender de
+Estas limitaciones describen la versión 1.2.2 y permiten diseñar aplicaciones sin depender de
 comportamientos que el framework todavía no garantiza.

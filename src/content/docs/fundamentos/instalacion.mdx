@@ -65,7 +65,7 @@ mi-app/
 ├── package.json
 ├── styles.css              # estilos globales importados por main.ts
 └── src/
-    ├── components/         # opcional; requiere registro explícito
+    ├── components/         # opcional; podés crearla con el CLI
     ├── base.pelela         # template inicial
     ├── base.ts             # ViewModel inicial
     └── base.css            # CSS asociado automáticamente a Base
@@ -218,24 +218,33 @@ el autorregistro e inicia el router.
 
 ## Contrato del autorregistro
 
-El autorregistro de `vite-plugin-pelelajs` 1.1.0 no recorre subdirectorios. Para que una pantalla o
-componente sea detectado automáticamente debe cumplir todas estas condiciones:
+El plugin recorre `src` y todos sus subdirectorios. Podés organizar pantallas y componentes en
+carpetas como `src/pages/`, `src/components/` o cualquier estructura más profunda sin registrarlos
+manualmente. Para que una pantalla o componente sea detectado automáticamente debe cumplir estas
+condiciones:
 
-1. Los archivos `.ts` y `.pelela` deben estar directamente dentro de `src`.
-2. Ambos archivos deben compartir exactamente el mismo nombre base, por ejemplo `app.ts` y
-   `app.pelela`.
-3. El archivo TypeScript debe exportar una clase cuyo nombre coincida exactamente con el
+1. Los archivos `.ts` y `.pelela` deben estar juntos y compartir exactamente el mismo nombre
+   base, por ejemplo `app.ts` y `app.pelela`.
+2. El archivo TypeScript debe exportar una clase cuyo nombre coincida exactamente con el
    `view-model` del template.
-4. Escribí `view-model` con comillas dobles. El autorregistro actual utiliza esa forma para
+3. Escribí `view-model` con comillas dobles. El autorregistro utiliza esa forma para
    descubrir el nombre de la clase.
-5. El CSS es opcional. Si existe, debe compartir el mismo nombre base y estar junto al par, por
+4. El CSS es opcional. Si existe, debe compartir el mismo nombre base y estar junto al par, por
    ejemplo `app.css`.
 
-Por el momento, no coloques pares que dependan del autorregistro dentro de `src/components/` u
-otro subdirectorio: el plugin no los encontrará. Una estructura con subdirectorios requiere
-registrar esos componentes manualmente. La guía de
-[Pelela CLI](../pelela-cli/#registrar-elementos-de-subdirectorios) muestra un ejemplo completo con
-`defineComponent()`.
+Por ejemplo, el autorregistro detecta este componente y asocia también su CSS:
+
+```text
+src/
+└── components/
+    └── counter/
+        ├── counter.ts
+        ├── counter.pelela
+        └── counter.css
+```
+
+Durante el desarrollo, los cambios en archivos `.ts`, `.pelela` y `.css` dentro de `src` actualizan
+también el módulo de autorregistro mediante HMR.
 
 ## `mountTemplate` o `router.start`
 
@@ -253,7 +262,7 @@ configuración completa.
 
 <div class="exercise">
   <h3>Chequeo rápido</h3>
-  <p>Si ves una pantalla de error o los bindings no responden, comprobá que el plugin esté configurado, que el módulo virtual se importe antes del montaje, que los archivos estén directamente en <code>src</code> y que el nombre de <code>view-model</code> coincida exactamente con la clase exportada.</p>
+  <p>Si ves una pantalla de error o los bindings no responden, comprobá que el plugin esté configurado, que el módulo virtual se importe antes del montaje, que los archivos <code>.ts</code> y <code>.pelela</code> estén juntos dentro de <code>src</code> y que <code>view-model</code> coincida exactamente con una clase exportada.</p>
 </div>
 
 ### Video relacionado

@@ -130,52 +130,13 @@ pelela new pages/Home
 pelela new -c components/TaskCard
 ```
 
-Sin embargo, el autorregistro de `vite-plugin-pelelajs` 1.1.0 solo descubre pares `.ts` y
-`.pelela` ubicados directamente en `src`: la
-[implementación actual del plugin](https://github.com/uqbar-project/pelelajs/blob/2ca8c2808b21d6d88b650908145b33595244b523/packages/vite-plugin-pelelajs/src/index.ts)
-lee ese directorio sin recorrer sus subdirectorios. Por eso, mientras dependas de
-`virtual:pelela-auto-register`, generá los archivos sin subdirectorios:
+En PelelaJS 1.2.2, el autorregistro recorre `src` de forma recursiva. Las pantallas y los
+componentes creados con esos comandos se registran automáticamente aunque estén en subdirectorios;
+si tienen un CSS adyacente con el mismo nombre base, también se asocia sin configuración extra.
+No hace falta crear un módulo con `defineComponent()` por organizar los archivos en carpetas.
 
-```bash
-pelela new Home
-pelela new -c TaskCard
-```
-
-Usá `pages/` o `components/` únicamente si también vas a
-[registrar explícitamente esos elementos](#registrar-elementos-de-subdirectorios) antes de montar
-sus templates o iniciar el router.
-
-## Registrar elementos de subdirectorios
-
-Creá un módulo de registro cuando decidas organizar pantallas o componentes en carpetas. Para un
-componente generado con `pelela new -c components/TaskCard`, el registro mínimo es:
-
-```ts title="register-components.ts"
-import { defineComponent } from 'pelelajs'
-import { TaskCard } from './src/components/task-card'
-import taskCardTemplate from './src/components/task-card.pelela'
-
-const taskCardCssUrl = new URL('./src/components/task-card.css', import.meta.url).href
-
-defineComponent('TaskCard', TaskCard, taskCardTemplate, {
-  cssUrls: [taskCardCssUrl],
-})
-```
-
-Importá ese módulo desde `main.ts` antes de iniciar el router o montar un template:
-
-```ts title="main.ts"
-import './register-components'
-import { router } from 'pelelajs'
-import 'virtual:pelela-auto-register'
-import { routes } from './routes'
-
-const root = document.getElementById('app') ?? document.body
-router.start(root, routes)
-```
-
-`defineComponent()` registra en una sola operación la clase, su template y las URLs de su CSS
-asociado. El mismo mecanismo sirve para una pantalla o layout ubicado en un subdirectorio.
+Mantené juntos los archivos `.ts` y `.pelela`, y asegurate de que `view-model` coincida exactamente
+con una clase exportada por el `.ts`.
 
 ## Renombrar
 

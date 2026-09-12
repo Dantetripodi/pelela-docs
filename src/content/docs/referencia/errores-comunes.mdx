@@ -9,10 +9,10 @@ description: Diagnóstico rápido para problemas frecuentes.
   <thead><tr><th>Síntoma</th><th>Qué revisar</th></tr></thead>
   <tbody>
     <tr><td>La demo no monta</td><td><code>mountTemplate</code>, el root y el import del template</td></tr>
-    <tr><td>El click no responde</td><td><code>click</code>, nombre exacto del método y ViewModel registrado</td></tr>
+    <tr><td>El click o Enter muestra un error</td><td>Nombre exacto del método y excepción lanzada por el handler</td></tr>
     <tr><td>El texto no cambia</td><td><code>bind-content</code> y nombre exacto de la propiedad</td></tr>
     <tr><td>Un input no actualiza estado</td><td><code>bind-value</code>, tipo de elemento y propiedad inicial</td></tr>
-    <tr><td>Un componente no aparece</td><td>nombre, archivo/template y props esperadas</td></tr>
+    <tr><td>Un componente no aparece</td><td>Par <code>.ts</code>/<code>.pelela</code>, clase exportada y nombre de <code>view-model</code></td></tr>
     <tr><td>El template tiene la raíz incorrecta</td><td><code>pelela new Nombre</code> para pantallas o <code>pelela new -c Nombre</code> para componentes reutilizables</td></tr>
     <tr><td>El CLI creó los archivos pero no hay una ruta</td><td>importar la clase y agregarla manualmente a <code>routes.ts</code></td></tr>
     <tr><td>Un tag dejó de funcionar después de renombrar</td><td>actualizar manualmente sus usos dentro de los templates <code>.pelela</code></td></tr>
@@ -28,6 +28,11 @@ resto de la pantalla de a una pieza. Mirá primero la consola y después la estr
 La documentación oficial del repositorio también separa arquitectura, binding/reactividad,
 componentes/routing, CLI y extensión de VS Code. Esas referencias sirven para profundizar
 cuando el concepto ya está claro.
+
+En PelelaJS 1.2.2, el autorregistro revisa que cada `view-model` sea una clase exportada por el
+archivo `.ts` correspondiente. También muestra la pantalla de error ante configuraciones inválidas
+de routing o layouts y ante errores síncronos o asíncronos en handlers `click` y `enter`. Leé el
+mensaje completo: incluye la causa y, para errores del ViewModel, el archivo que debés corregir.
 
 ### Video relacionado
 

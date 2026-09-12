@@ -21,12 +21,9 @@ pelela new NotFound
 El CLI crea los archivos, pero no modifica `routes.ts`: esa relación se declara expresamente en
 el arreglo de rutas que aparece más adelante.
 
-Todos los archivos de este ejemplo quedan directamente dentro de `src/`, que es donde el
-autorregistro de PelelaJS 1.1.0 los detecta.
-También podés organizar páginas y componentes en subdirectorios si los registrás explícitamente
-antes de llamar a `router.start`. Si un componente no está directamente dentro de `src` (por
-ejemplo, si está en `src/components/`), consultá
-[`defineComponent()`](../referencia/api-publica/#definecomponent) para ver cómo registrarlo.
+Para abreviar, todos los archivos del ejemplo quedan directamente dentro de `src/`, pero el
+autorregistro recorre también sus subdirectorios. Podés organizar las pantallas en `src/pages/` y
+los componentes en `src/components/` sin pasos adicionales.
 
 ### `src/home.ts`
 
@@ -293,7 +290,7 @@ cualquier componente, el nombre kebab-case se convierte a camelCase:
 
 ### Restricciones de los layouts
 
-En PelelaJS 1.1.0:
+En PelelaJS 1.2.2:
 
 - el template del layout debe contener exactamente un `<outlet>`;
 - el `<outlet>` debe estar vacío;
@@ -357,4 +354,4 @@ la ubicación correcta, y dirigí el fallback del servidor al `index.html` de es
 ### Video relacionado
 
 [Pelela - Routing](https://www.youtube.com/watch?v=sJMzgAMlxlY) es material complementario. Ante
-cualquier diferencia, esta página describe el comportamiento de PelelaJS 1.1.0.
+cualquier diferencia, esta página describe el comportamiento de PelelaJS 1.2.2.

@@ -20,6 +20,8 @@ puede ser una propiedad o path, el nombre de un método o, en el caso de `for-ea
 
 ## Resumen
 
+<div class="bindings-summary-table">
+
 | Atributo | Elementos válidos | Valor esperado | Dirección |
 | --- | --- | --- | --- |
 | `bind-content` | Elementos HTML del componente | Cualquier valor convertible a texto | ViewModel → vista |
@@ -33,6 +35,8 @@ puede ser una propiedad o path, el nombre de un método o, en el caso de `for-ea
 | `for-each` | Elemento que se repetirá | `Array` | ViewModel → vista |
 | `click` | Elementos HTML del componente | Nombre exacto de un método | Vista → ViewModel |
 | `enter` | Solo `input` | Nombre exacto de un método | Vista → ViewModel |
+
+</div>
 
 “Elementos del componente” excluye el interior de componentes hijos: cada componente enlaza su
 propio template y su propio ViewModel.

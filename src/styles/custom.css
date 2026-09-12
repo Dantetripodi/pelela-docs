@@ -167,6 +167,39 @@ body {
   white-space: nowrap;
 }
 
+.sl-markdown-content .contributors {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.75rem, 4vw, 2rem);
+  margin-block-start: 1.5rem;
+}
+
+.sl-markdown-content .contributor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.sl-markdown-content .contributor img {
+  width: clamp(4.75rem, 16vw, 8.5rem);
+  aspect-ratio: 1;
+  border: 3px solid var(--sl-color-accent);
+  border-radius: 50%;
+  box-shadow: 4px 4px 0 var(--pelela-shadow);
+  object-fit: cover;
+}
+
+.sl-markdown-content .contributor figcaption {
+  color: var(--sl-color-white);
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  font-weight: 750;
+  line-height: 1.25;
+}
+
 .sl-markdown-content :is(.card, .sl-link-card) {
   border: 2px solid var(--pelela-card-border);
   border-radius: 10px;
@@ -196,6 +229,7 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   margin: 1.5rem 0;
 }
+.mental-model-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .doc-card {
   align-self: stretch;
   border: 2px solid var(--pelela-card-border);
@@ -226,4 +260,8 @@ body {
 
 @media (max-width: 600px) {
   .sl-markdown-content :is(pre, .expressive-code) { box-shadow: 3px 3px 0 var(--pelela-shadow); }
+  .sl-markdown-content .contributors { gap: 0.5rem; }
+  .sl-markdown-content .contributor { gap: 0.5rem; }
+  .sl-markdown-content .contributor img { box-shadow: 2px 2px 0 var(--pelela-shadow); }
+  .mental-model-grid { grid-template-columns: 1fr; }
 }

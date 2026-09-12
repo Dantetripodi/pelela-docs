@@ -1,45 +1,128 @@
 ---
 title: Modelo mental
-description: Estado, vista y eventos en PelelaJS.
+description: Cómo se relacionan el estado, el ViewModel, la vista y los eventos en PelelaJS.
 ---
 
-Los ejemplos de esta sección parten de una pantalla creada con `pelela new App`. Pelela CLI genera
-juntos `app.ts`, `app.pelela` y `app.css`; acá nos concentramos en la responsabilidad de los dos
-primeros archivos.
+## La idea principal
 
-## El modelo mental
+Una interfaz construida con PelelaJS parte de una regla sencilla: **el estado es la fuente de
+verdad**. La vista representa ese estado y los eventos expresan las acciones que pueden
+modificarlo.
 
-Una interfaz Pelela puede pensarse como un ciclo:
+:::note[La regla más importante]
+No modificás la pantalla para que los datos coincidan. Modificás los datos y PelelaJS actualiza la
+pantalla mediante sus bindings.
+:::
+
+## Las piezas de una interfaz
+
+<div class="doc-grid mental-model-grid">
+  <div class="doc-card">
+    <h3>Modelo</h3>
+    <p>Representa los datos y las reglas del problema. Es independiente de cómo se muestran.</p>
+  </div>
+  <div class="doc-card">
+    <h3>ViewModel</h3>
+    <p>Expone el estado que necesita una pantalla y las acciones que puede ejecutar.</p>
+  </div>
+  <div class="doc-card">
+    <h3>Vista</h3>
+    <p>El template <code>.pelela</code> declara la estructura y cómo se presenta el estado.</p>
+  </div>
+</div>
+
+Los **bindings** conectan propiedades del ViewModel con elementos de la vista. Los **eventos**
+conectan las interacciones del usuario con métodos del ViewModel. PelelaJS mantiene sincronizadas
+ambas partes.
+
+En una aplicación pequeña, el ViewModel puede contener todo el estado necesario. Cuando aparecen
+reglas de negocio, conviene ubicarlas en modelos independientes y dejar que el ViewModel adapte sus
+datos para la pantalla.
+
+## Del evento a la vista
+
+Cada interacción sigue el mismo recorrido:
 
 ```text
-estado → render de la vista → evento del usuario → cambio de estado → render
+Interacción del usuario
+        ↓
+Evento declarado en el template
+        ↓
+Método del ViewModel
+        ↓
+Cambio de estado
+        ↓
+Actualización de los bindings
+        ↓
+Vista actualizada
 ```
 
-El ViewModel concentra los datos y las operaciones. El template describe dónde mostrar esos
-datos y qué acciones invocar.
+Este flujo es unidireccional: la acción modifica el estado y el estado determina qué muestra la
+vista. En los bindings bidireccionales, como `bind-value`, PelelaJS primero traslada al ViewModel el
+valor ingresado por el usuario; el estado continúa siendo la fuente de verdad.
 
-```ts
-export class App {
-  counter = 0
+## Un ejemplo completo
+
+El ViewModel contiene el estado del contador y la acción que lo modifica:
+
+```ts title="counter.ts"
+export class Counter {
+  count = 0
 
   increment() {
-    this.counter++
+    this.count += 1
   }
 }
 ```
 
-```html
-<pelela view-model="App">
-  <p bind-content="counter"></p>
+El template declara cómo mostrar ese estado y qué método ejecutar ante el evento:
+
+```html title="counter.pelela"
+<pelela view-model="Counter">
+  <p>Contador: <strong bind-content="count"></strong></p>
   <button click="increment">Sumar</button>
 </pelela>
 ```
 
-La vista no necesita buscar manualmente el elemento ni escribir `textContent`. Declara la
-relación y Pelela mantiene esa relación actualizada.
+Cuando la persona presiona **Sumar**:
 
-<div class="doc-grid">
-  <div class="doc-card"><h3>Estado</h3><p>Datos que explican cómo está la pantalla ahora.</p></div>
-  <div class="doc-card"><h3>Vista</h3><p>HTML que representa ese estado.</p></div>
-  <div class="doc-card"><h3>Evento</h3><p>Acción que puede cambiar el estado.</p></div>
-</div>
+1. El atributo `click="increment"` le indica a PelelaJS qué acción ejecutar.
+2. PelelaJS llama al método `increment` del ViewModel.
+3. El método modifica la propiedad `count`.
+4. PelelaJS detecta el cambio de estado.
+5. `bind-content="count"` actualiza únicamente el contenido del elemento asociado.
+
+El método no necesita conocer el botón ni buscar el elemento que muestra el resultado. Su única
+responsabilidad es expresar el cambio de estado.
+
+## Separar responsabilidades
+
+Una buena distribución permite entender cada parte sin recorrer toda la aplicación:
+
+| Pieza | Responsabilidad |
+| --- | --- |
+| Modelo | Datos y reglas propias del problema. |
+| ViewModel | Estado de presentación y acciones de la pantalla. |
+| Template | Estructura, bindings y eventos declarativos. |
+| CSS | Apariencia y adaptación visual. |
+| PelelaJS | Reactividad y sincronización entre el ViewModel y el DOM. |
+
+## Qué evitar
+
+Si un dato forma parte de la interfaz, el ViewModel debería representarlo. Evitá cambiar el DOM
+manualmente con `querySelector`, asignar `textContent` desde un método o guardar información sólo
+en el HTML.
+
+```ts title="Evitá modificar la vista directamente"
+document.querySelector('#count').textContent = String(this.count)
+```
+
+```ts title="Modificá el estado"
+this.count += 1
+```
+
+Este criterio mantiene separado el comportamiento de la presentación y hace que el código sea más
+fácil de probar y extender.
+
+Con este modelo en mente, continuá con [Bindings](../bindings/) y [Eventos](../eventos/) para conocer
+en detalle las dos conexiones entre el ViewModel y la vista.

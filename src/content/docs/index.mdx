@@ -1,31 +1,51 @@
 ---
-title: Aprendé PelelaJS
-description: Documentación didáctica para pasar del maquetado a las interfaces reactivas.
+title: PelelaJS
+description: Introducción al framework de UI didáctico PelelaJS.
 ---
 
-<p class="eyebrow">Algoritmos 3 · UNSAM</p>
+## ¿Qué es PelelaJS?
 
-## Del HTML estático a una interfaz viva
+PelelaJS es un **framework de interfaz de usuario creado con fines didácticos**. Está orientado a
+quienes están dando sus primeros pasos en el desarrollo frontend y quieren comprender cómo se
+construye una aplicación web a partir de **estado, vistas y eventos**.
 
-PelelaJS es un framework didáctico: ayuda a entender estado, eventos, binding y componentes
-antes de dar el salto a React. La idea es que puedas mirar una interfaz y explicar qué dato la
-alimenta, qué evento lo cambia y cómo se actualiza la vista.
+Su propósito es presentar los conceptos fundamentales de un framework de UI mediante una API
+pequeña y directa. Con PelelaJS se pueden desarrollar interfaces reactivas usando `ViewModels`,
+bindings, componentes, renderizado condicional, listas y routing, sin ocultar la relación entre
+los datos y la vista.
 
-<div class="doc-grid">
-  <div class="doc-card"><h3>01 · Base</h3><p>HTML semántico, CSS, Flexbox, Grid y responsive.</p></div>
-  <div class="doc-card"><h3>02 · Pelela</h3><p>ViewModels, estado, bindings y eventos.</p></div>
-  <div class="doc-card"><h3>03 · Interfaces</h3><p>Listas, componentes y rutas.</p></div>
-</div>
+## Propósito y alcance
 
-## Recorrido recomendado
+> **PelelaJS no es un framework comercial.** Es un proyecto educativo pensado para aprender los
+> principios que comparten los frameworks modernos y construir un modelo mental que luego pueda
+> trasladarse a otras tecnologías.
 
-1. Revisá [Antes de Pelela](./maquetado/).
-2. Creá el proyecto en [Instalación](./fundamentos/instalacion/).
-3. Aprendé a generar pantallas y componentes con [Pelela CLI](./fundamentos/pelela-cli/).
-4. Seguí [Modelo mental](./fundamentos/modelo-mental/) y después los bindings.
-5. Cerrá con [Puente hacia React](./puente-a-react/).
+El foco está puesto en entender:
 
-<div class="exercise">
-  <h3>Regla de oro</h3>
-  <p>Antes de escribir código, nombrá el estado de la pantalla y los eventos que pueden modificarlo.</p>
+- **Estado:** cómo representar la información de una pantalla.
+- **Eventos:** cómo expresar las acciones que modifican ese estado.
+- **Bindings:** cómo mantener sincronizados el modelo y la vista.
+- **Componentes:** cómo dividir una interfaz en partes con responsabilidades claras.
+- **Routing:** cómo organizar la navegación entre pantallas.
+
+Para comenzar, consultá la guía de [instalación](./fundamentos/instalacion/) y luego el
+[modelo mental](./fundamentos/modelo-mental/) de PelelaJS.
+
+## Autores
+
+PelelaJS es posible gracias al trabajo de:
+
+<div class="contributors" role="list" aria-label="Autores de PelelaJS">
+  <figure class="contributor" role="listitem">
+    <img src="./contributors/fernando-dodino.png" alt="Fernando Dodino" loading="lazy" />
+    <figcaption>Fernando Dodino</figcaption>
+  </figure>
+  <figure class="contributor" role="listitem">
+    <img src="./contributors/nicolas-villamonte.png" alt="Nicolás Villamonte" loading="lazy" />
+    <figcaption>Nicolás Villamonte</figcaption>
+  </figure>
+  <figure class="contributor" role="listitem">
+    <img src="./contributors/nicolas-viotti.png" alt="Nicolás Viotti" loading="lazy" />
+    <figcaption>Nicolás Viotti</figcaption>
+  </figure>
 </div>

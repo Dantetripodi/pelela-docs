@@ -1,9 +1,9 @@
 ---
 title: Referencia de bindings y eventos
-description: Contrato completo de bindings, directivas estructurales y eventos de PelelaJS 1.1.0.
+description: Contrato completo de bindings, directivas estructurales y eventos de PelelaJS 1.2.2.
 ---
 
-Esta página describe la sintaxis y el comportamiento de PelelaJS 1.1.0. Según el atributo, su valor
+Esta página describe la sintaxis y el comportamiento de PelelaJS 1.2.2. Según el atributo, su valor
 puede ser una propiedad o path, el nombre de un método o, en el caso de `for-each`, una declaración
 `item of collection`. Los atributos no evalúan expresiones JavaScript.
 
@@ -173,7 +173,7 @@ El ViewModel recibe el objeto asociado a la opción. Para reconocer la selecció
 PelelaJS compara primero por identidad y luego, en objetos no vacíos, por igualdad superficial de
 sus propiedades.
 
-PelelaJS 1.1.0 no ofrece un tratamiento específico para grupos de radios ni para `select[multiple]`.
+PelelaJS 1.2.2 no ofrece un tratamiento específico para grupos de radios ni para `select[multiple]`.
 
 ## `bind-class`
 
@@ -301,12 +301,12 @@ Son reactivas las mutaciones `push`, `pop`, `shift`, `unshift`, `splice`, `sort`
 asignación por índice y el reemplazo completo del array. También se actualizan los bindings al
 modificar una propiedad del item, por ejemplo `this.tasks[0].title = 'Nuevo título'`.
 
-En PelelaJS 1.1.0 no se deben usar `for-each` anidados: el segundo loop dentro de una copia no se
+En PelelaJS 1.2.2 no se deben usar `for-each` anidados: el segundo loop dentro de una copia no se
 configura como otro bloque repetible.
 
 ## Eventos: `click` y `enter`
 
-PelelaJS 1.1.0 implementa dos atributos de evento:
+PelelaJS 1.2.2 implementa dos atributos de evento:
 
 - `click`, sobre elementos HTML del componente;
 - `enter`, únicamente sobre `input` y solo cuando `KeyboardEvent.key === 'Enter'`.

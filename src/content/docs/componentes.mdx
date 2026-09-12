@@ -66,8 +66,10 @@ registro automático:
 import 'virtual:pelela-auto-register'
 ```
 
-El plugin de Vite busca pares de archivos `.ts` y `.pelela` con el mismo nombre dentro de `src`.
-El nombre declarado en `view-model` determina el tag del componente.
+El plugin de Vite busca de forma recursiva pares de archivos `.ts` y `.pelela` con el mismo nombre
+dentro de `src`. Pueden estar en la raíz o en subdirectorios; no hace falta registrarlos
+manualmente por estar dentro de una carpeta. El nombre declarado en `view-model` determina el tag
+del componente.
 
 Por ejemplo:
 
@@ -78,11 +80,12 @@ Por ejemplo:
 registran el tag `<counter-selector>`. Si existe un archivo CSS con el mismo nombre junto al `.ts`
 y al `.pelela`, el plugin también lo asocia con el componente.
 
+El archivo TypeScript debe exportar una clase llamada exactamente como el `view-model`. Si falta el
+`export`, cambia el uso de mayúsculas y minúsculas o se declara una función u objeto en lugar de una
+clase, Pelela muestra un diagnóstico con el archivo y la corrección esperada.
+
 Sin la importación de `virtual:pelela-auto-register`, los tags no quedan registrados. Usar un tag
 no estándar que no corresponde a un componente registrado produce un error durante el montaje.
-Si organizás los archivos en subdirectorios, consultá el
-[registro explícito con `defineComponent()`](./fundamentos/pelela-cli/#registrar-elementos-de-subdirectorios),
-porque el autorregistro de `vite-plugin-pelelajs` 1.1.0 no recorre esas carpetas.
 
 ## Comunicación entre padre e hijo
 

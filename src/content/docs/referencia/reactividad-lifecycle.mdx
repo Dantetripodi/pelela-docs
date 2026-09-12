@@ -183,7 +183,7 @@ PelelaJS no espera a que termine la promesa antes de mostrar la pantalla: primer
 inicial y luego se reflejan las asignaciones, incluso las realizadas después de un `await`.
 
 :::caution
-PelelaJS 1.1.0 invoca `initialize()` pero no espera ni captura automáticamente una promesa
+PelelaJS 1.2.2 invoca `initialize()` pero no espera ni captura automáticamente una promesa
 rechazada. En inicializaciones async, manejá los errores con `try/catch` y representalos como
 estado de la pantalla. En cambio, las promesas rechazadas por handlers `click` y `enter` sí se
 capturan y muestran mediante la pantalla de error.
@@ -207,8 +207,8 @@ instancia permanece viva entre navegaciones.
 - Los atributos de binding aceptan paths, no expresiones JavaScript.
 - Las propiedades requeridas por un binding deben existir al configurar el template.
 - `if` cambia `display`; no implementa montaje y desmontaje condicional.
-- `for-each` requiere un array inicial y no soporta loops anidados en 1.1.0.
-- No hay un lifecycle público de desmontaje en 1.1.0.
+- `for-each` requiere un array inicial y no soporta loops anidados en 1.2.2.
+- No hay un lifecycle público de desmontaje en 1.2.2.
 
 Para obtener valores derivados, preferí getters. Para efectos de inicio, carga de datos o
 preparación de estado, usá `initialize()`.

@@ -1,0 +1,308 @@
+---
+title: API pública y limitaciones
+description: Puntos de entrada de PelelaJS 1.1.0 para montaje, registro manual y routing.
+---
+
+La API que una aplicación usa normalmente se importa desde `pelelajs`:
+
+```ts
+import {
+  defineComponent,
+  defineViewModel,
+  mountTemplate,
+  router,
+  type RouteDefinition,
+} from 'pelelajs'
+```
+
+Con el plugin de Vite, el autorregistro reemplaza la mayoría de los registros manuales. Esta página
+incluye ambas opciones para dejar claro qué hace cada función.
+
+## API recomendada para aplicaciones
+
+| Export | Uso |
+| --- | --- |
+| `mountTemplate(container, template)` | Montar una pantalla sin router |
+| `router.start(container, routes)` | Iniciar una aplicación cuya pantalla depende de la URL |
+| `router.navigateTo(path)` | Navegar sin recargar la página |
+| `router.urlParameters()` | Leer parámetros dinámicos de la ruta actual |
+| `router.searchParameters()` | Leer la query string actual |
+| `RouteDefinition` | Tipar la configuración de rutas |
+| `defineViewModel(name, constructor)` | Registrar manualmente un ViewModel |
+| `defineComponent(name, constructor, template, options?)` | Registrar manualmente un componente |
+
+## `mountTemplate`
+
+```ts
+function mountTemplate(container: HTMLElement, templateHtml: string): void
+```
+
+Sanitiza el template, lo asigna al contenedor y configura las raíces Pelela que contiene.
+
+```ts
+import { defineViewModel, mountTemplate } from 'pelelajs'
+
+class App {
+  message = 'Hola'
+}
+
+defineViewModel('App', App)
+
+const root = document.querySelector<HTMLElement>('#app')
+if (!root) throw new Error('No se encontró #app')
+
+mountTemplate(
+  root,
+  `<pelela view-model="App">
+    <h1 bind-content="message"></h1>
+  </pelela>`,
+)
+```
+
+Si el montaje falla, `mountTemplate` muestra la pantalla de error de PelelaJS dentro del
+contenedor. No uses esta función para montar la misma raíz que administra el router.
+
+En un proyecto habitual, el template se importa desde un `.pelela`:
+
+```ts
+import appTemplate from './src/app.pelela'
+
+mountTemplate(root, appTemplate)
+```
+
+## `bootstrap`
+
+```ts
+function bootstrap(options?: PelelaOptions): void
+
+type PelelaOptions = {
+  document?: Document
+  root?: ParentNode
+}
+```
+
+`bootstrap` busca elementos `<pelela view-model="...">` ya presentes en el DOM, crea sus
+ViewModels y configura sus bindings.
+
+```ts
+import { bootstrap, defineViewModel } from 'pelelajs'
+
+class App {
+  message = 'Hola'
+}
+
+defineViewModel('App', App)
+bootstrap({ root: document.querySelector('#app')! })
+```
+
+Es una API de nivel más bajo que `mountTemplate`: no recibe ni inserta un template y, si falta el
+ViewModel registrado, propaga el error. En aplicaciones comunes preferí `mountTemplate` o
+`router.start`.
+
+## `defineViewModel`
+
+```ts
+function defineViewModel(name: string, creator: ViewModelConstructor): void
+```
+
+Registra el constructor con el nombre que utiliza `view-model`:
+
+```ts
+import { defineViewModel } from 'pelelajs'
+
+class Login {
+  email = ''
+}
+
+defineViewModel('Login', Login)
+```
+
+```html
+<pelela view-model="Login">
+  <input bind-value="email">
+</pelela>
+```
+
+El nombre debe coincidir exactamente. Registrar dos veces el mismo nombre produce un error. Con
+`virtual:pelela-auto-register`, las parejas válidas de `.ts` y `.pelela` se registran antes del
+montaje, por lo que no hace falta llamar esta función.
+
+## `defineComponent`
+
+```ts
+function defineComponent(
+  name: string,
+  creator: ViewModelConstructor,
+  template: string,
+  options?: { cssUrls?: string[] },
+): void
+```
+
+Registra a la vez el ViewModel, el template, el custom tag derivado y sus hojas de estilo.
+
+```ts
+import { defineComponent } from 'pelelajs'
+
+class TaskCard {
+  title = ''
+}
+
+defineComponent(
+  'TaskCard',
+  TaskCard,
+  `<component view-model="TaskCard">
+    <article bind-content="title"></article>
+  </component>`,
+  { cssUrls: ['/styles/task-card.css'] },
+)
+```
+
+El nombre se convierte a kebab-case para usarlo como tag: `TaskCard` produce `<task-card>`. El
+template y la clase deben cumplir el mismo contrato que los componentes autorregistrados.
+
+Cuando el template se monta como página, el nombre registrado en `defineComponent` debe coincidir
+con el valor de `view-model`. El nombre real del constructor no se valida: por claridad conviene
+usar el mismo nombre, aunque técnicamente podría registrarse otra clase, por ejemplo
+`defineComponent('TaskCard', CardViewModel, template)`.
+
+El registro manual es útil cuando el archivo no participa del autorregistro, cuando el template se
+obtiene de otra fuente o en infraestructura de pruebas. El autorregistro detecta pares `.ts` y
+`.pelela` con el mismo basename ubicados directamente dentro de `src`. Los archivos organizados en
+subdirectorios como `pages/` o `components/` deben registrarse explícitamente.
+
+### Componentes dentro de subdirectorios
+
+En PelelaJS 1.1.0, el autorregistro no recorre subdirectorios. El comando de la CLI puede crear los
+archivos fuera de la raíz de `src` (por ejemplo, dentro de `src/components/`), pero esos componentes
+deben registrarse manualmente antes de montar el template o iniciar el router:
+
+```bash
+pelela new components/Counter --component
+```
+
+El resultado puede organizarse así:
+
+```text
+src/
+├── components/
+│   ├── counter.ts
+│   ├── counter.pelela
+│   └── counter.css
+└── registry.ts
+main.ts
+```
+
+Centralizá el registro en `src/registry.ts`:
+
+```ts title="src/registry.ts"
+import { defineComponent } from 'pelelajs'
+import { Counter } from './components/counter'
+import counterTemplate from './components/counter.pelela'
+import './components/counter.css'
+
+defineComponent('Counter', Counter, counterTemplate)
+```
+
+Después importá ese archivo desde el punto de entrada, antes de montar la aplicación:
+
+```ts title="main.ts"
+import './src/registry'
+import { router } from 'pelelajs'
+import { routes } from './src/routes'
+
+const root = document.getElementById('app') ?? document.body
+
+router.start(root, routes)
+```
+
+Una vez registrado, el componente se usa normalmente desde cualquier template:
+
+```html
+<counter></counter>
+```
+
+Podés conservar `virtual:pelela-auto-register` para los pares que sigan directamente dentro de
+`src`, pero no registres manual y automáticamente la misma clase. Esta necesidad de registro
+explícito corresponde a la versión 1.1.0; se está evaluando una solución para que futuras versiones
+puedan descubrir componentes dentro de subdirectorios automáticamente.
+
+## `router` y `RouteDefinition`
+
+Una ruta representa una pantalla o un layout con hijas:
+
+```ts
+type RouteDefinition =
+  | {
+      path: string
+      component: ViewModelConstructor
+    }
+  | {
+      path: string
+      layout: ViewModelConstructor
+      children: RouteDefinition[]
+    }
+```
+
+```ts
+router.start(container, routes)
+router.navigateTo('/tasks/42')
+router.urlParameters()
+router.searchParameters()
+```
+
+Antes de llamar a `router.start`, deben estar registradas todas las páginas y layouts referenciados
+por las rutas. Los componentes utilizados dentro de sus templates también deben registrarse antes
+de que esos templates sean montados. Consultá [Routing](../../routing/) para la referencia de
+matching, parámetros, layouts, CSS y despliegue SPA.
+
+El objeto `router` también expone `registerCss(cssPath)`. PelelaJS lo utiliza para contabilizar CSS
+administrado por una ruta; no es necesario llamarlo desde código de aplicación.
+
+## Tipos exportados
+
+PelelaJS 1.1.0 exporta estos tipos para aplicaciones e integraciones:
+
+- `RouteDefinition`;
+- `ViewModelConstructor<T>`: un constructor sin argumentos;
+- `PelelaOptions`: opciones de `bootstrap`;
+- `BindingKind`, `EventType`, `RegistrationType` y `RoutingErrorType`: categorías usadas por los
+  errores del framework.
+
+Los ViewModels deben poder construirse sin argumentos. Si necesitan datos iniciales, usá
+propiedades, `prop-*`, `link-*`, `const-*`, parámetros de ruta o `initialize()` según corresponda.
+
+## Errores exportados
+
+El paquete exporta `PelelaError`, `InvalidHandlerError`, `PropertyValidationError`,
+`RoutingError` y `ViewModelRegistrationError`. Pueden servir para reconocer categorías de error en
+herramientas o pruebas; durante el montaje normal, varios errores se representan mediante la
+pantalla de error del framework.
+
+## Infraestructura también exportada
+
+El entrypoint de 1.1.0 expone además helpers y constantes usados por el compilador, el plugin o la
+infraestructura interna: `CONST_PREFIX`, `LINK_PREFIX`, `PROP_PREFIX`, `isPelelaRootTag`,
+`isStandardHtmlTag`, `isValidComponentAttribute`, `findUniqueCollapsedTag`, `initializeI18n` y
+`t`.
+
+Que un símbolo esté exportado significa que puede importarse en esta versión; no implica por sí
+solo que sea una abstracción recomendada para aplicaciones. Hasta que el proyecto publique una
+política explícita de estabilidad para esos helpers, evitá basar código de usuario en ellos.
+
+## Limitaciones de PelelaJS 1.1.0
+
+- Los atributos de template aceptan nombres y paths, no JavaScript ni interpolación.
+- Los únicos eventos declarativos son `click` y `enter`.
+- PelelaJS no ofrece una API para emitir eventos personalizados. La comunicación entre componentes
+  utiliza `prop-*`, `link-*` y `const-*`.
+- No hay slots ni proyección de contenido.
+- `if` oculta mediante `display: none`; no monta ni desmonta.
+- `for-each` requiere arrays y no soporta loops anidados.
+- No hay soporte específico para radios ni selects múltiples.
+- No hay lifecycle público de desmontaje.
+- Los estilos de componentes no están encapsulados.
+- El router no intercepta enlaces HTML, no tiene base path configurable y no soporta layouts
+  anidados.
+
+Estas limitaciones describen la versión 1.1.0 y permiten diseñar aplicaciones sin depender de
+comportamientos que el framework todavía no garantiza.

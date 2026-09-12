@@ -11,7 +11,9 @@ parámetros dinámicos, consultas, rutas comodín y layouts compartidos.
 Este ejemplo puede copiarse en un proyecto creado con la CLI. Todos los archivos quedan
 directamente dentro de `src/`, que es donde el autorregistro de PelelaJS 1.1.0 los detecta.
 También podés organizar páginas y componentes en subdirectorios si los registrás explícitamente
-antes de llamar a `router.start`.
+antes de llamar a `router.start`. Si un componente no está directamente dentro de `src` (por
+ejemplo, si está en `src/components/`), consultá
+[`defineComponent()`](../referencia/api-publica/#definecomponent) para ver cómo registrarlo.
 
 ### `src/home.ts`
 

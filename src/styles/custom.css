@@ -229,6 +229,7 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   margin: 1.5rem 0;
 }
+.mental-model-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .doc-card {
   align-self: stretch;
   border: 2px solid var(--pelela-card-border);
@@ -262,4 +263,5 @@ body {
   .sl-markdown-content .contributors { gap: 0.5rem; }
   .sl-markdown-content .contributor { gap: 0.5rem; }
   .sl-markdown-content .contributor img { box-shadow: 2px 2px 0 var(--pelela-shadow); }
+  .mental-model-grid { grid-template-columns: 1fr; }
 }
